@@ -1,5 +1,11 @@
+import { Ionicons } from '@expo/vector-icons';
+import { useIsFocused } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  Animated,
   Dimensions,
+  LayoutChangeEvent,
   Platform,
   SafeAreaView,
   ScrollView,
@@ -8,18 +14,12 @@ import {
   Text,
   TouchableOpacity,
   View,
-  Animated,
-  LayoutChangeEvent,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { useIsFocused } from '@react-navigation/native';
-import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 import { typography } from '@/constants/typography';
-import { Transaction as TxType, useTransactions } from '../../store/transactionStore';
-import { Budget, useBudgets } from '../../store/budgetStore';
 import { BeltButton } from '../../components/belt-button';
+import { Budget, useBudgets } from '../../store/budgetStore';
+import { Transaction as TxType, useTransactions } from '../../store/transactionStore';
 
 const SCREEN_H = Dimensions.get('window').height;
 
@@ -27,7 +27,7 @@ const SCREEN_H = Dimensions.get('window').height;
 const C = {
   bg: '#F2F2F7',
   surface: '#FFFFFF',
-  dark: '#111111', 
+  dark: '#111111',
   darkCard: '#1C1C1E',
   primary: '#111111',
   secondary: '#8E8E93',
@@ -71,7 +71,7 @@ function BalanceCard() {
       <View style={s.balanceLabelRow}>
         <Text style={s.balanceLabelText}>Balance</Text>
         <TouchableOpacity activeOpacity={0.8} style={s.personalPill}>
-          <Text style={s.personalPillText}>Personal</Text>
+          <Text style={s.personalPillText}>Personal Account</Text>
           <Ionicons name="chevron-forward" size={10} color="rgba(255,255,255,0.85)" style={{ marginLeft: 1 }} />
         </TouchableOpacity>
       </View>
@@ -91,18 +91,16 @@ function StatCards() {
 
   return (
     <View style={s.statCardsContainer}>
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false} 
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
         contentContainerStyle={s.statScroll}
         decelerationRate="fast"
-        snapToInterval={152} 
-        scrollEventThrottle={16}
       >
         {budgets.length === 0 ? (
-          <TouchableOpacity 
-            activeOpacity={0.7} 
-            style={[s.statCard, { borderStyle: 'dashed', borderColor: '#D1D1D6' }]} 
+          <TouchableOpacity
+            activeOpacity={0.7}
+            style={[s.statCard, { borderStyle: 'dashed', borderColor: '#D1D1D6' }]}
             onPress={() => router.push('/set-budget')}
           >
             <View style={[s.statCardInner, { justifyContent: 'center', alignItems: 'center' }]}>
@@ -114,25 +112,43 @@ function StatCards() {
           </TouchableOpacity>
         ) : (
           budgets.map((budget: Budget) => {
-            const progress = Math.min((budget.spent / budget.amount) * 100, 100);
+            const remaining = Math.max(0, budget.amount - budget.spent);
+            const progress = Math.min((remaining / budget.amount) * 100, 100);
             return (
-              <View key={budget.id} style={s.statCard}>
+              <TouchableOpacity
+                key={budget.id}
+                style={s.statCard}
+                activeOpacity={0.8}
+                onPress={() => router.push({
+                  pathname: '/add-transaction',
+                  params: { budgetId: budget.id }
+                })}
+              >
                 <View style={s.statCardInner}>
                   <View style={s.statCardTop}>
-                    <View style={[s.statIconBox, { backgroundColor: budget.bgColor }]}>
+                    <View style={[s.statIconBox, { backgroundColor: budget.color + '12' }]}>
                       <Ionicons name={budget.icon as any} size={14} color={budget.color} />
                     </View>
+                    <Ionicons name="chevron-forward" size={10} color={C.tertiary} />
                   </View>
-                  <Text style={s.statCardTitle} numberOfLines={1}>{budget.name}</Text>
-                  <Text style={s.statCardSubtitle}>Rs {budget.amount.toLocaleString()}</Text>
-                  <View style={s.progressBarRow}>
+
+                  <View style={s.statContent}>
+                    <Text style={s.statCardTitle} numberOfLines={1}>{budget.name}</Text>
+                    <Text style={s.statCardSubtitle} numberOfLines={1}>{budget.linkedCategoryName}</Text>
+                  </View>
+
+                  <View style={s.statProgressSection}>
                     <View style={s.progressTrack}>
                       <View style={[s.progressFill, { width: `${progress}%`, backgroundColor: budget.color }]} />
                     </View>
-                    <Text style={s.progressText}>{Math.round(progress)}%</Text>
+
+                    <View style={s.statAmountRow}>
+                      <Text style={s.statRemainingText}>Rs {remaining.toLocaleString()}</Text>
+                      <Text style={s.statPercentText}>{Math.round(progress)}%</Text>
+                    </View>
                   </View>
                 </View>
-              </View>
+              </TouchableOpacity>
             );
           })
         )}
@@ -174,8 +190,9 @@ function ActionBelt() {
 export default function HomeScreen() {
   const isFocused = useIsFocused();
   const { transactions } = useTransactions();
+  const { budgets } = useBudgets();
   const [activeFilter, setActiveFilter] = useState('All');
-  const [pinnedHeaderH, setPinnedHeaderH] = useState(180); 
+  const [pinnedHeaderH, setPinnedHeaderH] = useState(180);
 
   const scrollY = useRef(new Animated.Value(0)).current;
   const listAnim = useRef(new Animated.Value(0)).current;
@@ -201,23 +218,21 @@ export default function HomeScreen() {
     return tx.type.toLowerCase() === activeFilter.toLowerCase();
   });
 
-  const listTranslateY = listAnim.interpolate({ 
-    inputRange: [0, 1], 
-    outputRange: [SCREEN_H * 0.8, 0] 
+  const listTranslateY = listAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [SCREEN_H * 0.8, 0]
   });
 
-  // Parallax effect for stats
   const statParallaxY = scrollY.interpolate({
     inputRange: [-100, 0, 1000],
-    outputRange: [0, 0, 1000], 
+    outputRange: [0, 0, 1000],
     extrapolate: 'clamp'
   });
 
   return (
     <View style={s.root}>
       <StatusBar barStyle="dark-content" />
-      
-      {/* 1. Header (FIXED) */}
+
       <View style={s.pinnedHeader} onLayout={onPinnedLayout}>
         <SafeAreaView>
           <View style={s.headerContentPadded}>
@@ -227,22 +242,21 @@ export default function HomeScreen() {
         </SafeAreaView>
       </View>
 
-      {/* 2. Main Scrolling Content */}
-      <Animated.ScrollView 
-        style={[s.scroll, { marginTop: pinnedHeaderH }]} 
-        showsVerticalScrollIndicator={false} 
-        bounces 
+      <Animated.ScrollView
+        style={[s.scroll, { marginTop: pinnedHeaderH }]}
+        showsVerticalScrollIndicator={false}
+        bounces
         contentContainerStyle={s.scrollContent}
         scrollEventThrottle={1}
-        stickyHeaderIndices={[1]} 
+        stickyHeaderIndices={[1]}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
           { useNativeDriver: true }
         )}
       >
-        <Animated.View 
-          style={{ 
-            zIndex: 1, 
+        <Animated.View
+          style={{
+            zIndex: 1,
             transform: [{ translateY: statParallaxY }],
             paddingHorizontal: 10,
             paddingTop: 0,
@@ -254,15 +268,15 @@ export default function HomeScreen() {
 
         <View style={s.stickyBumper}>
           <View style={s.shadowWrapper}>
-             <View style={s.overlapSheet}>
-                <ActionBelt />
-             </View>
+            <View style={s.overlapSheet}>
+              <ActionBelt />
+            </View>
           </View>
-          
+
           <View style={{ backgroundColor: C.dark }}>
             <View style={s.txSectionHeaderSticky}>
               <View style={s.txHeaderMain}>
-                <Text style={typography.headingLarge}>Transactions</Text>
+                <Text style={[typography.headingLarge, { fontSize: 24 }]}>Transactions</Text>
                 <TouchableOpacity activeOpacity={0.7}><Text style={typography.link}>View all ›</Text></TouchableOpacity>
               </View>
               <TransactionTabs active={activeFilter} onSelect={setActiveFilter} />
@@ -273,7 +287,12 @@ export default function HomeScreen() {
         <Animated.View style={[s.txListBody, { transform: [{ translateY: listTranslateY }] }]}>
           <View style={s.txList}>
             {filteredTransactions.map((item, i) => (
-              <TransactionItem key={item.id} item={item} last={i === filteredTransactions.length - 1} />
+              <TransactionItem
+                key={item.id}
+                item={item}
+                last={i === filteredTransactions.length - 1}
+                budgetName={item.budgetId ? budgets.find(b => b.id === item.budgetId)?.name : undefined}
+              />
             ))}
             {filteredTransactions.length === 0 && (
               <View style={{ paddingTop: 40, alignItems: 'center' }}>
@@ -282,7 +301,7 @@ export default function HomeScreen() {
             )}
           </View>
         </Animated.View>
-        
+
         <View style={{ height: 120 }} />
       </Animated.ScrollView>
     </View>
@@ -305,7 +324,7 @@ function TransactionTabs({ active, onSelect }: { active: string; onSelect: (f: s
   );
 }
 
-function TransactionItem({ item, last }: { item: TxType; last: boolean }) {
+function TransactionItem({ item, last, budgetName }: { item: TxType; last: boolean; budgetName?: string }) {
   const isIncome = item.type === 'income';
   return (
     <>
@@ -317,11 +336,21 @@ function TransactionItem({ item, last }: { item: TxType; last: boolean }) {
         </View>
         <View style={s.txText}>
           <Text style={typography.txTitle} numberOfLines={1}>{item.name}</Text>
-          <Text style={[typography.txSubtitle, { marginTop: 1 }]} numberOfLines={1}>{item.categoryName} · {item.date}</Text>
+          <View style={s.subRow}>
+            <Text style={typography.txSubtitle} numberOfLines={1}>{item.categoryName} · {item.date}</Text>
+            {budgetName && (
+              <View style={s.budgetBadge}>
+                <Ionicons name="wallet-outline" size={10} color={C.secondary} />
+                <Text style={s.budgetText}>{budgetName}</Text>
+              </View>
+            )}
+          </View>
         </View>
-        <Text style={isIncome ? typography.amountPositive : typography.amountNegative}>
-          {isIncome ? '+' : '−'}Rs {item.amount.toLocaleString()}
-        </Text>
+        <View style={s.txAmountCol}>
+          <Text style={isIncome ? typography.amountPositive : typography.amountNegative}>
+            {isIncome ? '+' : '−'}Rs {item.amount.toLocaleString()}
+          </Text>
+        </View>
       </View>
       {!last && <View style={s.txSeparator} />}
     </>
@@ -333,27 +362,11 @@ const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: C.surface },
   scroll: { flex: 1, zIndex: 10 },
   scrollContent: { paddingBottom: 0 },
-  
-  pinnedHeader: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: C.surface,
-    zIndex: 100,
-  },
-  headerContentPadded: {
-    paddingHorizontal: 16,
-    paddingBottom: 0,
-    paddingTop: Platform.OS === 'web' ? 10 : 0,
-  },
-
-  header: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    justifyContent: 'space-between', 
-    marginTop: Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) + 10 : 10,
-    marginBottom: 10,
+  pinnedHeader: { position: 'absolute', top: 0, left: 0, right: 0, backgroundColor: C.surface, zIndex: 100 },
+  headerContentPadded: { paddingHorizontal: 16, paddingBottom: 0, paddingTop: Platform.OS === 'web' ? 10 : 0 },
+  header: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) + 6 : 6,
+    marginBottom: 6,
   },
   logoRow: { flexDirection: 'row', alignItems: 'center', gap: 7 },
   logoText: { fontFamily: 'Inter_700Bold', fontSize: 18, fontWeight: '700', letterSpacing: -1, fontStyle: "italic", color: '#111111' },
@@ -361,74 +374,55 @@ const s = StyleSheet.create({
   squareBtn: { width: 36, height: 36, borderRadius: 10, backgroundColor: '#F5F5F7', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#E8E8ED' },
   balanceBlock: { marginBottom: 0 },
   balanceLabelRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: -5 },
-  balanceLabelText: { fontFamily: 'Inter_400Regular', fontSize: 16, color: '#8E8E93', letterSpacing: -1 },
+  balanceLabelText: { fontFamily: 'Inter_400Regular', fontSize: 16, color: '#8E8E93', letterSpacing: -1.2 },
   personalPill: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#7C6EEA', paddingHorizontal: 11, paddingVertical: 5, borderRadius: 20, gap: 2 },
   personalPillText: { fontFamily: 'Inter_500Medium', fontSize: 12, color: '#FFFFFF', letterSpacing: 0 },
   balanceAmountRow: { flexDirection: 'row', alignItems: 'baseline' },
   balanceInteger: { fontFamily: 'Inter_700Bold', fontSize: 44, fontWeight: '700', letterSpacing: -2, color: '#3a3a3aff', lineHeight: 52 },
   balanceDecimal: { fontFamily: 'Inter_400Regular', fontSize: 22, color: '#9A9A9E', letterSpacing: -0.3, lineHeight: 52, marginLeft: 1 },
   statCardsContainer: { marginBottom: 3 },
-  statScroll: { gap: 3, paddingBottom: 2 },
-  statCard: { width: 140, height: 106, borderRadius: 18, borderWidth: 1, borderColor: '#f2f2f2', padding: 1, backgroundColor: '#FFFFFF' },
-  statCardInner: { flex: 1, borderRadius: 18, borderWidth: 1.5, borderColor: '#eaeaeb', backgroundColor: '#FFFFFF', padding: 10 },
-  statCardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  statIconBox: { width: 26, height: 26, borderRadius: 7, justifyContent: 'center', alignItems: 'center' },
-  statCardTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#111111', letterSpacing: -0.2 },
-  statCardSubtitle: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#8E8E93', marginBottom: 10 },
-  progressBarRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 6 },
-  progressTrack: { flex: 1, height: 4, backgroundColor: '#E8E8ED', borderRadius: 2, overflow: 'hidden' },
+  statScroll: { gap: 6, paddingHorizontal: 0, paddingBottom: 0 },
+  statCard: { width: 130, height: 130, borderRadius: 18, borderWidth: 1, borderColor: '#f2f2f2', padding: 1, backgroundColor: '#FFFFFF' },
+  statCardInner: { flex: 1, borderRadius: 18, borderWidth: 1.5, borderColor: '#eaeaeb', backgroundColor: '#FFFFFF', padding: 10, justifyContent: 'space-between' },
+  statCardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  statIconBox: { width: 30, height: 30, borderRadius: 9, justifyContent: 'center', alignItems: 'center' },
+  statContent: { marginTop: 0 },
+  statCardTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#111111', letterSpacing: -0.3 },
+  statCardSubtitle: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#8E8E93', marginTop: 0 },
+  statProgressSection: { marginTop: 2 },
+  progressTrack: { width: '100%', height: 4, backgroundColor: '#F2F2F7', borderRadius: 2, overflow: 'hidden', marginBottom: 5 },
   progressFill: { height: '100%', borderRadius: 2 },
-  progressText: { fontFamily: 'Inter_600SemiBold', fontSize: 10, color: '#111111' },
-  
-  // ── Unified Sticky Bumper ──
-  stickyBumper: {
-    backgroundColor: 'transparent',
-    overflow: 'visible',
-    zIndex: 10,
-  },
+  statAmountRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  statRemainingText: { fontFamily: 'Inter_600SemiBold', fontSize: 11, color: '#111', letterSpacing: -0.8 },
+  statPercentText: { fontFamily: 'Inter_700Bold', fontSize: 11, color: '#111' },
+
+  stickyBumper: { backgroundColor: 'transparent', overflow: 'visible', zIndex: 10 },
   shadowWrapper: {
     ...Platform.select({
       ios: { shadowColor: '#000', shadowOffset: { width: 0, height: -12 }, shadowOpacity: 0.3, shadowRadius: 15 },
-      android: { elevation: 30, shadowColor: '#000' }, 
+      android: { elevation: 30, shadowColor: '#000' },
       web: { filter: 'drop-shadow(0px -15px 15px rgba(0,0,0,0.3))' }
     }),
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    backgroundColor: 'transparent',
-    overflow: 'visible',
+    borderTopLeftRadius: 32, borderTopRightRadius: 32, backgroundColor: 'transparent', overflow: 'visible',
   },
-  overlapSheet: {
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    backgroundColor: C.dark,
-    overflow: 'hidden',
-  },
+  overlapSheet: { borderTopLeftRadius: 32, borderTopRightRadius: 32, backgroundColor: C.dark, overflow: 'hidden' },
   beltOuter: { paddingVertical: 5 },
   beltRow: { flexDirection: 'row', alignItems: 'center', gap: 0, justifyContent: 'center' },
 
-  txSectionHeaderSticky: {
-    backgroundColor: C.surface,
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    paddingHorizontal: 14,
-    paddingTop: 12, // Compact
-  },
-  txHeaderMain: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }, // Compact
-
-  txListBody: {
-    backgroundColor: C.surface,
-    paddingHorizontal: 14,
-    paddingBottom: 40,
-    zIndex: 5,
-  },
-  
-  filterRow: { gap: 8, marginBottom: 10, alignItems: 'center' }, // Compact
+  txSectionHeaderSticky: { backgroundColor: C.surface, borderTopLeftRadius: 32, borderTopRightRadius: 32, paddingHorizontal: 14, paddingTop: 16 },
+  txHeaderMain: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
+  txListBody: { backgroundColor: C.surface, paddingHorizontal: 14, paddingBottom: 40, zIndex: 5 },
+  filterRow: { gap: 8, marginBottom: 10, alignItems: 'center' },
   filterPill: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 20, backgroundColor: '#F4F4F6', borderWidth: StyleSheet.hairlineWidth, borderColor: '#E5E5EA' },
   filterPillActive: { backgroundColor: '#F3EFFE', borderColor: '#D8CCFA' },
   txList: {},
-  txRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8 }, // Compact
-  txIconOuter: { width: 40, height: 40, borderRadius: 12, borderWidth: 1, borderColor: '#f8f8f8', padding: 1, marginRight: 10, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' }, // Compact
-  txIconBox: { width: 34, height: 34, borderRadius: 10, borderWidth: 1.3, borderColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center', flexShrink: 0 }, // Compact
+  txRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10 },
+  txIconOuter: { width: 40, height: 40, borderRadius: 12, borderWidth: 1, borderColor: '#f8f8f8', padding: 1, marginRight: 10, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' },
+  txIconBox: { width: 34, height: 34, borderRadius: 10, borderWidth: 1.3, borderColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center', flexShrink: 0 },
   txText: { flex: 1, marginRight: 8 },
-  txSeparator: { height: StyleSheet.hairlineWidth, backgroundColor: C.separator, marginLeft: 40 + 10 }, // Aligned to new icon width
+  subRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 },
+  budgetBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: '#F2F2F7', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
+  budgetText: { fontFamily: 'Inter_500Medium', fontSize: 10, color: '#8E8E93' },
+  txAmountCol: { alignItems: 'flex-end' },
+  txSeparator: { height: StyleSheet.hairlineWidth, backgroundColor: C.separator, marginLeft: 40 + 10 },
 });

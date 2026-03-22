@@ -10,11 +10,12 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from 'react-native';
 
 import { typography } from '@/constants/typography';
 import { CategoryType, useCategories } from '../../store/categoryStore';
+import { ConfirmModal } from '../../components/confirm-modal';
 
 const C = {
   bg: '#F2F2F7',
@@ -73,12 +74,21 @@ export default function CategoriesScreen() {
   const [activeTab, setActiveTab] = useState<CategoryType>('expense');
   const [pinnedHeaderH, setPinnedHeaderH] = useState(130);
 
+  // New state for custom modal
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleteName, setDeleteName] = useState("");
+
   const filteredCategories = categories.filter(cat => cat.type === activeTab);
 
   const onPinnedLayout = useCallback((event: LayoutChangeEvent) => {
     const { height } = event.nativeEvent.layout;
     if (height > 0) setPinnedHeaderH(height);
   }, []);
+
+  const handleDeleteTrigger = (id: string, name: string) => {
+    setDeleteId(id);
+    setDeleteName(name);
+  };
 
   return (
     <View style={s.root}>
@@ -135,9 +145,9 @@ export default function CategoriesScreen() {
                   </View>
                   <View style={s.actions}>
                     <TouchableOpacity activeOpacity={0.7} style={s.miniBtn}>
-                      <Ionicons name="create-outline" size={16} color={C.tertiary} />
+                      <Ionicons name="pencil-outline" size={16} color={C.tertiary} />
                     </TouchableOpacity>
-                    <TouchableOpacity activeOpacity={0.7} style={s.miniBtn} onPress={() => deleteCategory(item.id)}>
+                    <TouchableOpacity activeOpacity={0.7} style={s.miniBtn} onPress={() => handleDeleteTrigger(item.id, item.name)}>
                       <Ionicons name="trash-outline" size={16} color="#FF3B30" />
                     </TouchableOpacity>
                   </View>
@@ -152,6 +162,14 @@ export default function CategoriesScreen() {
             )}
           </View>
         </View>
+
+        <ConfirmModal
+          visible={!!deleteId}
+          onClose={() => setDeleteId(null)}
+          onConfirm={() => deleteId && deleteCategory(deleteId)}
+          title="Delete Category"
+          message={`Delete "${deleteName}"? This action cannot be undone.`}
+        />
 
         <View style={{ height: 120 }} />
       </ScrollView>
@@ -207,6 +225,6 @@ const s = StyleSheet.create({
   textSide: { flex: 1, marginRight: 8 },
   separator: { height: StyleSheet.hairlineWidth, backgroundColor: C.separator, marginLeft: 44 + 12 },
 
-  actions: { flexDirection: 'row', gap: 6 },
-  miniBtn: { width: 32, height: 32, borderRadius: 10, backgroundColor: '#F5F5F7', justifyContent: 'center', alignItems: 'center' },
+  actions: { flexDirection: 'row', gap: 4 },
+  miniBtn: { width: 32, height: 32, justifyContent: 'center', alignItems: 'center' },
 });

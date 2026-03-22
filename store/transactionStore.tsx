@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 
 export type TransactionType = 'income' | 'expense';
 
@@ -13,6 +13,7 @@ export interface Transaction {
   date: string;
   time: string;
   notes?: string;
+  budgetId?: string; // LINKED BUDGET
 }
 
 interface TransactionContextType {
@@ -25,7 +26,7 @@ const TransactionContext = createContext<TransactionContextType | undefined>(und
 
 export function TransactionProvider({ children }: { children: React.ReactNode }) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [balance, setBalance] = useState(0); // Set to 0 for a clean start
+  const [balance, setBalance] = useState(150000); // Initial Balance for testing
 
   const addTransaction = (newTx: Omit<Transaction, 'id'>) => {
     const tx: Transaction = {

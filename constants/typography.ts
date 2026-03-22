@@ -28,9 +28,10 @@ export const typography = {
     fontFamily: fonts.semiBold,
     fontSize: 20,
     fontWeight: '600' as const,
-    letterSpacing: -0.8, // Tight tracking
-    lineHeight: 26,
+    letterSpacing: -1.5, // Tight tracking
+    lineHeight: 20,
     color: '#111111',
+    marginBottom: 10
   },
 
   /** Card and sub-section titles — "Invest", "Shared" */
