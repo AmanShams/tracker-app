@@ -18,12 +18,14 @@ import { FormHeader } from '../components/form-header';
 import { useBudgets } from '../store/budgetStore';
 import { Category, useCategories } from '../store/categoryStore';
 import { useTransactions } from '../store/transactionStore';
+import { useThemeStore } from '../store/themeStore';
 
 export default function SetBudgetScreen() {
   const router = useRouter();
   const { addBudget } = useBudgets();
   const { categories } = useCategories();
   const { balance } = useTransactions();
+  const { isDark, colors } = useThemeStore();
 
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
@@ -33,7 +35,6 @@ export default function SetBudgetScreen() {
 
   const handleSave = () => {
     if (!name || !amount || !selectedCategory) return;
-    
     const numAmount = parseFloat(amount);
     
     // Check if balance is sufficient
@@ -58,9 +59,9 @@ export default function SetBudgetScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.surface }]}>
       <Stack.Screen options={{ headerShown: false }} />
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
 
       <FormHeader title="Create Budget" />
 
@@ -71,34 +72,34 @@ export default function SetBudgetScreen() {
         <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
           <View style={styles.form}>
             {/* Minimal Underline Input for Budget Title */}
-            <View style={styles.field}>
-              <Text style={styles.label}>Budget Name</Text>
+            <View style={[styles.field, { borderBottomColor: colors.separator }]}>
+              <Text style={[styles.label, { color: colors.textTertiary }]}>Budget Name</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { color: colors.text }]}
                 placeholder="e.g. Monthly Food"
-                placeholderTextColor="#C7C7CC"
+                placeholderTextColor={colors.textTertiary}
                 value={name}
                 onChangeText={setName}
               />
             </View>
 
             {/* Minimal Underline Input for Amount */}
-            <View style={styles.field}>
-              <Text style={styles.label}>Allocation Amount</Text>
+            <View style={[styles.field, { borderBottomColor: colors.separator }]}>
+              <Text style={[styles.label, { color: colors.textTertiary }]}>Allocation Amount</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { color: colors.text }]}
                 placeholder="Rs 0.00"
-                placeholderTextColor="#C7C7CC"
+                placeholderTextColor={colors.textTertiary}
                 keyboardType="numeric"
                 value={amount}
                 onChangeText={setAmount}
               />
-              <Text style={styles.balanceInfo}>Available: Rs {balance.toLocaleString()}</Text>
+              <Text style={[styles.balanceInfo, { color: colors.textSecondary }]}>Available: Rs {balance.toLocaleString()}</Text>
             </View>
 
             {/* Category selection */}
-            <View style={styles.field}>
-              <Text style={styles.label}>Link to Category</Text>
+            <View style={[styles.field, { borderBottomColor: colors.separator }]}>
+              <Text style={[styles.label, { color: colors.textTertiary }]}>Link to Category</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryScroll}>
                 {expenseCategories.map((cat) => {
                   const isActive = selectedCategory?.id === cat.id;
@@ -109,12 +110,12 @@ export default function SetBudgetScreen() {
                         setSelectedCategory(cat);
                         if (!name) setName(cat.name + ' Budget');
                       }}
-                      style={[styles.catChip, isActive && { backgroundColor: cat.color + '15', borderColor: cat.color }]}
+                      style={[styles.catChip, { backgroundColor: isDark ? colors.bg : '#F2F2F7' }, isActive && { backgroundColor: cat.color + '15', borderColor: cat.color }]}
                     >
                       <View style={[styles.catIcon, { backgroundColor: cat.color }]}>
                         <Ionicons name={cat.icon as any} size={12} color="#FFF" />
                       </View>
-                      <Text style={[styles.catText, isActive && { color: cat.color, fontFamily: 'Inter_600SemiBold' }]}>{cat.name}</Text>
+                      <Text style={[styles.catText, { color: colors.textSecondary }, isActive && { color: cat.color, fontFamily: 'Inter_600SemiBold' }]}>{cat.name}</Text>
                     </TouchableOpacity>
                   );
                 })}
@@ -122,12 +123,12 @@ export default function SetBudgetScreen() {
             </View>
 
             <TouchableOpacity
-              style={[styles.saveBtn, (!name || !amount || !selectedCategory) && { opacity: 0.5 }]}
+              style={[styles.saveBtn, { backgroundColor: colors.primary }, (!name || !amount || !selectedCategory) && { opacity: 0.5 }]}
               activeOpacity={0.8}
               onPress={handleSave}
               disabled={!name || !amount || !selectedCategory}
             >
-              <Text style={styles.saveBtnText}>Activate Budget</Text>
+              <Text style={[styles.saveBtnText, { color: isDark ? '#000' : '#FFF' }]}>Activate Budget</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -137,19 +138,19 @@ export default function SetBudgetScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  container: { flex: 1 },
   scrollContent: { paddingHorizontal: 24, paddingTop: 30 },
   form: { gap: 12 },
-  field: { width: '100%', marginBottom: 12, borderBottomWidth: 1, borderBottomColor: '#E5E5EA', paddingBottom: 4 },
-  label: { fontFamily: 'Inter_500Medium', fontSize: 13, color: '#999', marginBottom: 8 },
-  input: { fontSize: 16, fontFamily: 'Inter_600SemiBold', color: '#000', paddingVertical: 10, letterSpacing: -0.2 },
-  balanceInfo: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#8E8E93', marginTop: 2 },
+  field: { width: '100%', marginBottom: 12, borderBottomWidth: 1, paddingBottom: 4 },
+  label: { fontFamily: 'Inter_500Medium', fontSize: 13, marginBottom: 8 },
+  input: { fontSize: 16, fontFamily: 'Inter_600SemiBold', paddingVertical: 10, letterSpacing: -0.2 },
+  balanceInfo: { fontFamily: 'Inter_400Regular', fontSize: 11, marginTop: 2 },
   
   categoryScroll: { paddingVertical: 8, gap: 12 },
-  catChip: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 12, backgroundColor: '#F2F2F7', borderWidth: 1, borderColor: 'transparent' },
+  catChip: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 12, borderWidth: 1, borderColor: 'transparent' },
   catIcon: { width: 20, height: 20, borderRadius: 6, justifyContent: 'center', alignItems: 'center', marginRight: 8 },
-  catText: { fontFamily: 'Inter_400Regular', fontSize: 14, color: '#666' },
+  catText: { fontFamily: 'Inter_400Regular', fontSize: 14 },
 
-  saveBtn: { backgroundColor: '#000000', height: 54, borderRadius: 16, justifyContent: 'center', alignItems: 'center', marginTop: 30 },
-  saveBtnText: { color: '#FFFFFF', fontSize: 16, fontFamily: 'Inter_600SemiBold' },
+  saveBtn: { height: 54, borderRadius: 16, justifyContent: 'center', alignItems: 'center', marginTop: 30 },
+  saveBtnText: { fontSize: 16, fontFamily: 'Inter_600SemiBold' },
 });

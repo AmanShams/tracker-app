@@ -1,13 +1,13 @@
+import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
   Platform,
   StatusBar,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { useThemeStore } from '../store/themeStore';
 
 interface HeaderAction {
   icon: string;
@@ -19,20 +19,28 @@ interface MainHeaderProps {
 }
 
 export function MainHeader({ actions = [] }: MainHeaderProps) {
+  const { isDark, colors } = useThemeStore();
+
   return (
     <View style={s.header}>
       <View style={s.logoRow}>
-        <Text style={s.logoText}>MANs Tracker</Text>
+        {/* <Text style={[s.logoText, { color: colors.text }]}>MANs Tracker</Text> */}
       </View>
       <View style={s.headerIconGroup}>
         {actions.map((action, i) => (
-          <TouchableOpacity 
-            key={i} 
-            activeOpacity={0.7} 
-            style={s.squareBtn} 
+          <TouchableOpacity
+            key={i}
+            activeOpacity={0.7}
+            style={[
+              s.squareBtn,
+              {
+                backgroundColor: isDark ? '#1C1C1E' : '#F5F5F7',
+                borderColor: isDark ? '#2C2C2E' : '#E8E8ED'
+              }
+            ]}
             onPress={action.onPress}
           >
-            <Ionicons name={action.icon as any} size={16} color="#111111" />
+            <Ionicons name={action.icon as any} size={16} color={colors.text} />
           </TouchableOpacity>
         ))}
       </View>
@@ -54,18 +62,15 @@ const s = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     letterSpacing: -1,
-    fontStyle: 'italic',
-    color: '#111111'
+    fontStyle: 'italic'
   },
   headerIconGroup: { flexDirection: 'row', gap: 8 },
   squareBtn: {
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: '#F5F5F7',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E8E8ED'
+    borderWidth: 1
   },
 });

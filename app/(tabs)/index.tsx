@@ -20,31 +20,19 @@ import { typography } from '@/constants/typography';
 import { BeltButton } from '../../components/belt-button';
 import { MainHeader } from '../../components/main-header';
 import { Budget, useBudgets } from '../../store/budgetStore';
+import { useThemeStore } from '../../store/themeStore';
 import { Transaction as TxType, useTransactions } from '../../store/transactionStore';
 
 const SCREEN_H = Dimensions.get('window').height;
 
 // ─── Design Tokens ────────────────────────────────────────────────────────────
-const C = {
-  bg: '#F2F2F7',
-  surface: '#FFFFFF',
-  dark: '#111111',
-  darkCard: '#1C1C1E',
-  primary: '#111111',
-  secondary: '#8E8E93',
-  tertiary: '#C7C7CC',
-  accent: '#7C6EEA',
-  green: '#16A34A',
-  separator: '#F0F0F3',
-};
-
-const SPACE = { xs: 4, sm: 8, md: 12, base: 16, lg: 20, xl: 24, xxl: 32 };
 const FILTERS = ['All', 'Expense', 'Income'];
 
 
 // ─── Balance Card ─────────────────────────────────────────────────────────────
 function BalanceCard() {
   const { balance } = useTransactions();
+  const { colors } = useThemeStore();
   const balanceStr = balance.toFixed(2);
   const [intPartRaw, decPart] = balanceStr.split('.');
   const intPart = intPartRaw.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
@@ -52,7 +40,7 @@ function BalanceCard() {
   return (
     <View style={s.balanceBlock}>
       <View style={s.balanceLabelRow}>
-        <Text style={s.balanceLabelText}>Balance</Text>
+        <Text style={[s.balanceLabelText, { color: colors.textSecondary }]}>Balance</Text>
         <TouchableOpacity activeOpacity={0.8} style={s.personalPill}>
           <Text style={s.personalPillText}>Personal Account</Text>
           <Ionicons name="chevron-forward" size={10} color="rgba(255,255,255,0.85)" style={{ marginLeft: 1 }} />
@@ -60,8 +48,8 @@ function BalanceCard() {
       </View>
 
       <View style={s.balanceAmountRow}>
-        <Text style={[s.balanceInteger, balance < 0 && { color: '#FF3B30' }]}>{intPart}</Text>
-        <Text style={[s.balanceDecimal, balance < 0 && { color: '#FF3B30' }]}>.{decPart}</Text>
+        <Text style={[s.balanceInteger, { color: colors.text }, balance < 0 && { color: colors.red }]}>{intPart}</Text>
+        <Text style={[s.balanceDecimal, { color: colors.textSecondary }, balance < 0 && { color: colors.red }]}>.{decPart}</Text>
       </View>
     </View>
   );
@@ -70,6 +58,7 @@ function BalanceCard() {
 // ─── Stat Cards ───────────────────────────────────────────────────────────────
 function StatCards() {
   const { budgets } = useBudgets();
+  const { isDark, colors } = useThemeStore();
   const router = useRouter();
 
   return (
@@ -83,14 +72,14 @@ function StatCards() {
         {budgets.length === 0 ? (
           <TouchableOpacity
             activeOpacity={0.7}
-            style={[s.statCard, { borderStyle: 'dashed', borderColor: '#D1D1D6' }]}
+            style={[s.statCard, { borderStyle: 'dashed', borderColor: colors.textTertiary, backgroundColor: colors.surface }]}
             onPress={() => router.push('/set-budget')}
           >
-            <View style={[s.statCardInner, { justifyContent: 'center', alignItems: 'center' }]}>
-              <View style={[s.statIconBox, { backgroundColor: '#F2F2F7', width: 32, height: 32, borderRadius: 10 }]}>
-                <Ionicons name="add" size={20} color="#8E8E93" />
+            <View style={[s.statCardInner, { justifyContent: 'center', alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <View style={[s.statIconBox, { backgroundColor: isDark ? '#1C1C1E' : '#F2F2F7', width: 32, height: 32, borderRadius: 10 }]}>
+                <Ionicons name="add" size={20} color={colors.textSecondary} />
               </View>
-              <Text style={[s.statCardTitle, { color: '#8E8E93', marginTop: 8 }]}>Set Budget</Text>
+              <Text style={[s.statCardTitle, { color: colors.textSecondary, marginTop: 8 }]}>Set Budget</Text>
             </View>
           </TouchableOpacity>
         ) : (
@@ -100,34 +89,34 @@ function StatCards() {
             return (
               <TouchableOpacity
                 key={budget.id}
-                style={s.statCard}
+                style={[s.statCard, { backgroundColor: colors.surface, borderColor: isDark ? '#2C2C2E' : '#f2f2f2' }]}
                 activeOpacity={0.8}
                 onPress={() => router.push({
                   pathname: '/add-transaction',
                   params: { budgetId: budget.id }
                 })}
               >
-                <View style={s.statCardInner}>
+                <View style={[s.statCardInner, { backgroundColor: colors.surface, borderColor: isDark ? '#1C1C1E' : '#eaeaeb' }]}>
                   <View style={s.statCardTop}>
                     <View style={[s.statIconBox, { backgroundColor: budget.color + '12' }]}>
                       <Ionicons name={budget.icon as any} size={14} color={budget.color} />
                     </View>
-                    <Ionicons name="chevron-forward" size={10} color={C.tertiary} />
+                    <Ionicons name="chevron-forward" size={10} color={colors.textTertiary} />
                   </View>
 
                   <View style={s.statContent}>
-                    <Text style={s.statCardTitle} numberOfLines={1}>{budget.name}</Text>
-                    <Text style={s.statCardSubtitle} numberOfLines={1}>{budget.linkedCategoryName}</Text>
+                    <Text style={[s.statCardTitle, { color: colors.text }]} numberOfLines={1}>{budget.name}</Text>
+                    <Text style={[s.statCardSubtitle, { color: colors.textSecondary }]} numberOfLines={1}>{budget.linkedCategoryName}</Text>
                   </View>
 
                   <View style={s.statProgressSection}>
-                    <View style={s.progressTrack}>
+                    <View style={[s.progressTrack, { backgroundColor: isDark ? '#1C1C1E' : '#F2F2F7' }]}>
                       <View style={[s.progressFill, { width: `${progress}%`, backgroundColor: budget.color }]} />
                     </View>
 
                     <View style={s.statAmountRow}>
-                      <Text style={s.statRemainingText}>Rs {remaining.toLocaleString()}</Text>
-                      <Text style={s.statPercentText}>{Math.round(progress)}%</Text>
+                      <Text style={[s.statRemainingText, { color: colors.text }]}>Rs {remaining.toLocaleString()}</Text>
+                      <Text style={[s.statPercentText, { color: colors.textSecondary }]}>{Math.round(progress)}%</Text>
                     </View>
                   </View>
                 </View>
@@ -174,6 +163,7 @@ export default function HomeScreen() {
   const isFocused = useIsFocused();
   const { transactions } = useTransactions();
   const { budgets } = useBudgets();
+  const { isDark, colors } = useThemeStore();
   const [activeFilter, setActiveFilter] = useState('All');
   const [pinnedHeaderH, setPinnedHeaderH] = useState(180);
 
@@ -213,17 +203,17 @@ export default function HomeScreen() {
   });
 
   return (
-    <View style={s.root}>
-      <StatusBar barStyle="dark-content" />
+    <View style={[s.root, { backgroundColor: colors.surface }]}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
 
-      <View style={s.pinnedHeader} onLayout={onPinnedLayout}>
+      <View style={[s.pinnedHeader, { backgroundColor: colors.surface }]} onLayout={onPinnedLayout}>
         <SafeAreaView>
           <View style={s.headerContentPadded}>
-            <MainHeader 
+            <MainHeader
               actions={[
                 { icon: 'stats-chart-outline' },
                 { icon: 'card-outline' }
-              ]} 
+              ]}
             />
             <BalanceCard />
           </View>
@@ -256,24 +246,24 @@ export default function HomeScreen() {
 
         <View style={s.stickyBumper}>
           <View style={s.shadowWrapper}>
-            <View style={s.overlapSheet}>
+            <View style={[s.overlapSheet, { backgroundColor: isDark ? colors.bg : '#111111' }]}>
               <ActionBelt />
             </View>
           </View>
 
-          <View style={{ backgroundColor: C.dark }}>
-            <View style={s.txSectionHeaderSticky}>
+          <View style={{ backgroundColor: isDark ? colors.bg : '#111111' }}>
+            <View style={[s.txSectionHeaderSticky, { backgroundColor: colors.surface }]}>
               <View style={s.txHeaderMain}>
-                <Text style={[typography.headingLarge, { fontSize: 24 }]}>Transactions</Text>
-                <TouchableOpacity activeOpacity={0.7}><Text style={typography.link}>View all ›</Text></TouchableOpacity>
+                <Text style={[typography.headingLarge, { fontSize: 24, color: colors.text }]}>Transactions</Text>
+                <TouchableOpacity activeOpacity={0.7}><Text style={[typography.link, { color: colors.textSecondary }]}>View all ›</Text></TouchableOpacity>
               </View>
               <TransactionTabs active={activeFilter} onSelect={setActiveFilter} />
             </View>
           </View>
         </View>
 
-        <Animated.View style={[s.txListBody, { transform: [{ translateY: listTranslateY }] }]}>
-          <View style={s.txList}>
+        <Animated.View style={[s.txListBody, { backgroundColor: colors.surface, transform: [{ translateY: listTranslateY }] }]}>
+          <View style={[s.txList, { backgroundColor: colors.surface }]}>
             {filteredTransactions.map((item, i) => (
               <TransactionItem
                 key={item.id}
@@ -284,7 +274,7 @@ export default function HomeScreen() {
             ))}
             {filteredTransactions.length === 0 && (
               <View style={{ paddingTop: 40, alignItems: 'center' }}>
-                <Text style={{ fontFamily: 'Inter_400Regular', color: '#999', fontSize: 14 }}>No transactions yet</Text>
+                <Text style={{ fontFamily: 'Inter_400Regular', color: colors.textTertiary, fontSize: 14 }}>No transactions yet</Text>
               </View>
             )}
           </View>
@@ -298,13 +288,14 @@ export default function HomeScreen() {
 
 // ─── Shared Components ─────────────────────────────────────────────────────────
 function TransactionTabs({ active, onSelect }: { active: string; onSelect: (f: string) => void }) {
+  const { colors } = useThemeStore();
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.filterRow}>
       {FILTERS.map((f) => {
         const isActive = f === active;
         return (
-          <TouchableOpacity key={f} onPress={() => onSelect(f)} activeOpacity={0.7} style={[s.filterPill, isActive && s.filterPillActive]}>
-            <Text style={isActive ? typography.filterActive : typography.filterInactive}>{f}</Text>
+          <TouchableOpacity key={f} onPress={() => onSelect(f)} activeOpacity={0.7} style={[s.filterPill, { backgroundColor: colors.bg, borderColor: colors.border }, isActive && { backgroundColor: colors.accent + '20', borderColor: colors.accent }]}>
+            <Text style={[isActive ? typography.filterActive : typography.filterInactive, { color: isActive ? colors.accent : colors.textSecondary }]}>{f}</Text>
           </TouchableOpacity>
         );
       })}
@@ -314,45 +305,47 @@ function TransactionTabs({ active, onSelect }: { active: string; onSelect: (f: s
 
 function TransactionItem({ item, last, budgetName }: { item: TxType; last: boolean; budgetName?: string }) {
   const isIncome = item.type === 'income';
+  const { isDark, colors } = useThemeStore();
   return (
     <>
       <View style={s.txRow}>
-        <View style={s.txIconOuter}>
-          <View style={[s.txIconBox, { backgroundColor: item.categoryColor + '12', borderColor: item.categoryColor + '20' }]}>
+        <View style={[s.txIconOuter, { backgroundColor: colors.surface, borderColor: isDark ? '#1C1C1E' : '#f8f8f8' }]}>
+          <View style={[s.txIconBox, { backgroundColor: item.categoryColor + '12', borderColor: isDark ? item.categoryColor + '30' : item.categoryColor + '20' }]}>
             <Ionicons name={item.categoryIcon as any} size={15} color={item.categoryColor} />
           </View>
         </View>
         <View style={s.txText}>
-          <Text style={typography.txTitle} numberOfLines={1}>{item.name}</Text>
+          <Text style={[typography.txTitle, { color: colors.text }]} numberOfLines={1}>{item.name}</Text>
           <View style={s.subRow}>
-            <Text style={typography.txSubtitle} numberOfLines={1}>{item.categoryName} · {item.date}</Text>
+            <Text style={[typography.txSubtitle, { color: colors.textSecondary }]} numberOfLines={1}>{item.categoryName} · {item.date}</Text>
             {budgetName && (
-              <View style={s.budgetBadge}>
-                <Ionicons name="wallet-outline" size={10} color={C.secondary} />
-                <Text style={s.budgetText}>{budgetName}</Text>
+              <View style={[s.budgetBadge, { backgroundColor: isDark ? '#1C1C1E' : '#F2F2F7' }]}>
+                <Ionicons name="wallet-outline" size={10} color={colors.textSecondary} />
+                <Text style={[s.budgetText, { color: colors.textSecondary }]}>{budgetName}</Text>
               </View>
             )}
           </View>
         </View>
         <View style={s.txAmountCol}>
-          <Text style={isIncome ? typography.amountPositive : typography.amountNegative}>
+          <Text style={[isIncome ? typography.amountPositive : typography.amountNegative, { color: isIncome ? colors.green : colors.red }]}>
             {isIncome ? '+' : '−'}Rs {item.amount.toLocaleString()}
           </Text>
         </View>
       </View>
-      {!last && <View style={s.txSeparator} />}
+      {!last && <View style={[s.txSeparator, { backgroundColor: colors.separator }]} />}
     </>
   );
 }
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: C.surface },
+  root: { flex: 1 },
   scroll: { flex: 1, zIndex: 10 },
   scrollContent: { paddingBottom: 0 },
-  pinnedHeader: { position: 'absolute', top: 0, left: 0, right: 0, backgroundColor: C.surface, zIndex: 100 },
+  pinnedHeader: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 100 },
   headerContentPadded: { paddingHorizontal: 16, paddingBottom: 0, paddingTop: Platform.OS === 'web' ? 10 : 0 },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+  header: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     marginTop: Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) + 6 : 6,
     marginBottom: 6,
   },
@@ -370,19 +363,19 @@ const s = StyleSheet.create({
   balanceDecimal: { fontFamily: 'Inter_400Regular', fontSize: 22, color: '#9A9A9E', letterSpacing: -0.3, lineHeight: 52, marginLeft: 1 },
   statCardsContainer: { marginBottom: 3 },
   statScroll: { gap: 6, paddingHorizontal: 0, paddingBottom: 0 },
-  statCard: { width: 130, height: 130, borderRadius: 18, borderWidth: 1, borderColor: '#f2f2f2', padding: 1, backgroundColor: '#FFFFFF' },
-  statCardInner: { flex: 1, borderRadius: 18, borderWidth: 1.5, borderColor: '#eaeaeb', backgroundColor: '#FFFFFF', padding: 10, justifyContent: 'space-between' },
+  statCard: { width: 130, height: 130, borderRadius: 18, borderWidth: 1, padding: 1 },
+  statCardInner: { flex: 1, borderRadius: 18, borderWidth: 1.5, padding: 10, justifyContent: 'space-between' },
   statCardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   statIconBox: { width: 30, height: 30, borderRadius: 9, justifyContent: 'center', alignItems: 'center' },
   statContent: { marginTop: 0 },
-  statCardTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#111111', letterSpacing: -0.3 },
-  statCardSubtitle: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#8E8E93', marginTop: 0 },
+  statCardTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 13, letterSpacing: -0.3 },
+  statCardSubtitle: { fontFamily: 'Inter_400Regular', fontSize: 11, marginTop: 0 },
   statProgressSection: { marginTop: 2 },
-  progressTrack: { width: '100%', height: 4, backgroundColor: '#F2F2F7', borderRadius: 2, overflow: 'hidden', marginBottom: 5 },
+  progressTrack: { width: '100%', height: 4, borderRadius: 2, overflow: 'hidden', marginBottom: 5 },
   progressFill: { height: '100%', borderRadius: 2 },
   statAmountRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  statRemainingText: { fontFamily: 'Inter_600SemiBold', fontSize: 11, color: '#111', letterSpacing: -0.8 },
-  statPercentText: { fontFamily: 'Inter_700Bold', fontSize: 11, color: '#111' },
+  statRemainingText: { fontFamily: 'Inter_600SemiBold', fontSize: 11, letterSpacing: -0.8 },
+  statPercentText: { fontFamily: 'Inter_700Bold', fontSize: 11 },
 
   stickyBumper: { backgroundColor: 'transparent', overflow: 'visible', zIndex: 10 },
   shadowWrapper: {
@@ -393,24 +386,23 @@ const s = StyleSheet.create({
     }),
     borderTopLeftRadius: 32, borderTopRightRadius: 32, backgroundColor: 'transparent', overflow: 'visible',
   },
-  overlapSheet: { borderTopLeftRadius: 32, borderTopRightRadius: 32, backgroundColor: C.dark, overflow: 'hidden' },
+  overlapSheet: { borderTopLeftRadius: 32, borderTopRightRadius: 32, overflow: 'hidden' },
   beltOuter: { paddingVertical: 5 },
   beltRow: { flexDirection: 'row', alignItems: 'center', gap: 0, justifyContent: 'center' },
 
-  txSectionHeaderSticky: { backgroundColor: C.surface, borderTopLeftRadius: 32, borderTopRightRadius: 32, paddingHorizontal: 14, paddingTop: 16 },
+  txSectionHeaderSticky: { borderTopLeftRadius: 32, borderTopRightRadius: 32, paddingHorizontal: 14, paddingTop: 16 },
   txHeaderMain: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
-  txListBody: { backgroundColor: C.surface, paddingHorizontal: 14, paddingBottom: 40, zIndex: 5 },
+  txListBody: { paddingHorizontal: 14, paddingBottom: 40, zIndex: 5 },
   filterRow: { gap: 8, marginBottom: 10, alignItems: 'center' },
-  filterPill: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 20, backgroundColor: '#F4F4F6', borderWidth: StyleSheet.hairlineWidth, borderColor: '#E5E5EA' },
-  filterPillActive: { backgroundColor: '#F3EFFE', borderColor: '#D8CCFA' },
+  filterPill: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 20 },
   txList: {},
   txRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10 },
-  txIconOuter: { width: 40, height: 40, borderRadius: 12, borderWidth: 1, borderColor: '#f8f8f8', padding: 1, marginRight: 10, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' },
-  txIconBox: { width: 34, height: 34, borderRadius: 10, borderWidth: 1.3, borderColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center', flexShrink: 0 },
+  txIconOuter: { width: 40, height: 40, borderRadius: 12, borderWidth: 1, padding: 1, marginRight: 10, alignItems: 'center', justifyContent: 'center' },
+  txIconBox: { width: 34, height: 34, borderRadius: 10, borderWidth: 1.3, justifyContent: 'center', alignItems: 'center', flexShrink: 0 },
   txText: { flex: 1, marginRight: 8 },
   subRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 },
-  budgetBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: '#F2F2F7', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
-  budgetText: { fontFamily: 'Inter_500Medium', fontSize: 10, color: '#8E8E93' },
+  budgetBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
+  budgetText: { fontFamily: 'Inter_500Medium', fontSize: 10 },
   txAmountCol: { alignItems: 'flex-end' },
-  txSeparator: { height: StyleSheet.hairlineWidth, backgroundColor: C.separator, marginLeft: 40 + 10 },
+  txSeparator: { height: StyleSheet.hairlineWidth, marginLeft: 40 + 10 },
 });

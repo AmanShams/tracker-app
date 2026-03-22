@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { FormHeader } from '../components/form-header';
 import { useCategories, CategoryType } from '../store/categoryStore';
+import { useThemeStore } from '../store/themeStore';
 
 const PRESET_COLORS = [
   '#10B981', '#3B82F6', '#EF4444', '#F59E0B', '#6366F1', '#EC4899', '#8B5CF6', '#06B6D4'
@@ -29,6 +30,7 @@ const PRESET_ICONS = [
 export default function CreateCategoryScreen() {
   const router = useRouter();
   const { addCategory } = useCategories();
+  const { isDark, colors } = useThemeStore();
   
   const [name, setName] = useState('');
   const [type, setType] = useState<CategoryType>('expense');
@@ -47,11 +49,11 @@ export default function CreateCategoryScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.surface }]}>
       <Stack.Screen options={{ headerShown: false }} />
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
 
-      <FormHeader title="create-category" />
+      <FormHeader title="Create Category" />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -60,36 +62,36 @@ export default function CreateCategoryScreen() {
         <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
           <View style={styles.form}>
             {/* Type Selector */}
-            <View style={styles.typeToggleRow}>
+            <View style={[styles.typeToggleRow, { backgroundColor: isDark ? '#1C1C1E' : '#F2F2F7' }]}>
               <TouchableOpacity 
-                style={[styles.typeBtn, type === 'expense' && styles.typeBtnActive]} 
+                style={[styles.typeBtn, type === 'expense' && { backgroundColor: isDark ? '#2C2C2E' : '#FFFFFF' }]} 
                 onPress={() => setType('expense')}
               >
-                <Text style={[styles.typeBtnText, type === 'expense' && styles.typeBtnTextActive]}>Expense</Text>
+                <Text style={[styles.typeBtnText, { color: colors.textSecondary }, type === 'expense' && { color: colors.text, fontFamily: 'Inter_600SemiBold' }]}>Expense</Text>
               </TouchableOpacity>
               <TouchableOpacity 
-                style={[styles.typeBtn, type === 'income' && styles.typeBtnActive]} 
+                style={[styles.typeBtn, type === 'income' && { backgroundColor: isDark ? '#2C2C2E' : '#FFFFFF' }]} 
                 onPress={() => setType('income')}
               >
-                <Text style={[styles.typeBtnText, type === 'income' && styles.typeBtnTextActive]}>Income</Text>
+                <Text style={[styles.typeBtnText, { color: colors.textSecondary }, type === 'income' && { color: colors.text, fontFamily: 'Inter_600SemiBold' }]}>Income</Text>
               </TouchableOpacity>
             </View>
 
             {/* Name Input */}
-            <View style={styles.field}>
-              <Text style={styles.label}>Category Name</Text>
+            <View style={[styles.field, { borderBottomColor: colors.separator }]}>
+              <Text style={[styles.label, { color: colors.textTertiary }]}>Category Name</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { color: colors.text }]}
                 placeholder="e.g. Health"
-                placeholderTextColor="#C7C7CC"
+                placeholderTextColor={colors.textTertiary}
                 value={name}
                 onChangeText={setName}
               />
             </View>
 
             {/* Icon Picker */}
-            <View style={styles.field}>
-              <Text style={styles.label}>Icon</Text>
+            <View style={[styles.field, { borderBottomColor: colors.separator }]}>
+              <Text style={[styles.label, { color: colors.textTertiary }]}>Icon</Text>
               <View style={styles.grid}>
                 {PRESET_ICONS.map((icon) => (
                   <TouchableOpacity 
@@ -97,18 +99,18 @@ export default function CreateCategoryScreen() {
                     onPress={() => setSelectedIcon(icon)}
                     style={[
                       styles.iconBtn,
-                      selectedIcon === icon && { backgroundColor: '#F2F2F7' }
+                      selectedIcon === icon && { backgroundColor: isDark ? '#1C1C1E' : '#F2F2F7' }
                     ]}
                   >
-                    <Ionicons name={icon as any} size={22} color={selectedIcon === icon ? '#000' : '#8E8E93'} />
+                    <Ionicons name={icon as any} size={22} color={selectedIcon === icon ? colors.text : colors.textTertiary} />
                   </TouchableOpacity>
                 ))}
               </View>
             </View>
 
             {/* Color Picker */}
-            <View style={styles.field}>
-              <Text style={styles.label}>Color</Text>
+            <View style={[styles.field, { borderBottomColor: colors.separator }]}>
+              <Text style={[styles.label, { color: colors.textTertiary }]}>Color</Text>
               <View style={styles.colorRow}>
                 {PRESET_COLORS.map((color) => (
                   <TouchableOpacity
@@ -117,7 +119,7 @@ export default function CreateCategoryScreen() {
                     style={[
                       styles.colorCircle,
                       { backgroundColor: color },
-                      selectedColor === color && styles.colorCircleSelected
+                      selectedColor === color && { borderWidth: 3, borderColor: colors.surface }
                     ]}
                   />
                 ))}
@@ -125,11 +127,11 @@ export default function CreateCategoryScreen() {
             </View>
 
             <TouchableOpacity
-              style={styles.saveBtn}
+              style={[styles.saveBtn, { backgroundColor: colors.primary }]}
               activeOpacity={0.8}
               onPress={handleSave}
             >
-              <Text style={styles.saveBtnText}>Create Category</Text>
+              <Text style={[styles.saveBtnText, { color: isDark ? '#000' : '#FFF' }]}>Create Category</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -141,7 +143,6 @@ export default function CreateCategoryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
   },
   scrollContent: {
     paddingHorizontal: 24,
@@ -153,7 +154,6 @@ const styles = StyleSheet.create({
   },
   typeToggleRow: {
     flexDirection: 'row',
-    backgroundColor: '#F2F2F7',
     borderRadius: 12,
     padding: 4,
     marginBottom: 8,
@@ -164,39 +164,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 8,
   },
-  typeBtnActive: {
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
   typeBtnText: {
     fontFamily: 'Inter_500Medium',
     fontSize: 14,
-    color: '#8E8E93',
-  },
-  typeBtnTextActive: {
-    color: '#000000',
-    fontFamily: 'Inter_600SemiBold',
   },
   field: {
     width: '100%',
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
     paddingBottom: 4,
   },
   label: {
     fontFamily: 'Inter_400Regular',
     fontSize: 13,
-    color: '#999999',
     marginBottom: 8,
   },
   input: {
     fontSize: 16,
     fontFamily: 'Inter_600SemiBold',
-    color: '#000',
     paddingVertical: 10,
     letterSpacing: -0.2,
   },
@@ -224,17 +208,7 @@ const styles = StyleSheet.create({
     height: 32,
     borderRadius: 16,
   },
-  colorCircleSelected: {
-    borderWidth: 3,
-    borderColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
-  },
   saveBtn: {
-    backgroundColor: '#000000',
     height: 54,
     borderRadius: 16,
     justifyContent: 'center',
@@ -242,7 +216,6 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   saveBtnText: {
-    color: '#FFFFFF',
     fontSize: 16,
     fontFamily: 'Inter_600SemiBold',
   },

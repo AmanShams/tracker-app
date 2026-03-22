@@ -16,23 +16,13 @@ import {
 
 import { typography } from '@/constants/typography';
 import { MainHeader } from '../../components/main-header';
+import { useThemeStore } from '../../store/themeStore';
 
 const SCREEN_H = Dimensions.get('window').height;
 
-const C = {
-  bg: '#F2F2F7',
-  surface: '#FFFFFF',
-  dark: '#111111',
-  primary: '#111111',
-  secondary: '#8E8E93',
-  tertiary: '#C7C7CC',
-  accent: '#7C6EEA',
-  green: '#16A34A',
-  separator: '#F0F0F3',
-};
-
 
 export default function ActivityScreen() {
+  const { isDark, colors } = useThemeStore();
   const [pinnedHeaderH, setPinnedHeaderH] = useState(130);
   const [activeRange, setActiveRange] = useState('Week');
 
@@ -42,16 +32,16 @@ export default function ActivityScreen() {
   }, []);
 
   return (
-    <View style={s.root}>
+    <View style={[s.root, { backgroundColor: colors.surface }]}>
       <Stack.Screen options={{ headerShown: false }} />
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
 
       {/* 1. Header (FIXED) */}
-      <View style={s.pinnedHeader} onLayout={onPinnedLayout}>
+      <View style={[s.pinnedHeader, { backgroundColor: colors.surface }]} onLayout={onPinnedLayout}>
         <SafeAreaView>
           <View style={s.headerContentPadded}>
             <MainHeader actions={[{ icon: 'calendar-outline' }]} />
-            <Text style={[typography.headingLarge, { fontSize: 28 }]}>Activity</Text>
+            <Text style={[typography.headingLarge, { fontSize: 28, color: colors.text }]}>Activity</Text>
           </View>
         </SafeAreaView>
       </View>
@@ -64,26 +54,26 @@ export default function ActivityScreen() {
         stickyHeaderIndices={[0]}
       >
         {/* Sticky Filter Only (BELT REMOVED) */}
-        <View style={s.stickyFilterContainer}>
-          <View style={s.filterWrapper}>
+        <View style={[s.stickyFilterContainer, { backgroundColor: colors.surface }]}>
+          <View style={[s.filterWrapper, { borderBottomColor: colors.separator }]}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.filterRow}>
               {['Week', 'Month', 'Year'].map(r => (
                 <TouchableOpacity
                   key={r}
                   onPress={() => setActiveRange(r)}
-                  style={[s.filterPill, activeRange === r && s.filterPillActive]}
+                  style={[s.filterPill, { backgroundColor: colors.bg }, activeRange === r && { backgroundColor: colors.accent + '20', borderColor: colors.accent, borderWidth: 1 }]}
                 >
-                  <Text style={activeRange === r ? typography.filterActive : typography.filterInactive}>{r}</Text>
+                  <Text style={[activeRange === r ? typography.filterActive : typography.filterInactive, { color: activeRange === r ? colors.accent : colors.textSecondary }]}>{r}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
           </View>
         </View>
 
-        <View style={s.listBody}>
-          <View style={s.placeholderCard}>
-            <Ionicons name="stats-chart" size={40} color={C.tertiary} />
-            <Text style={s.placeholderText}>Detailed insights coming soon</Text>
+        <View style={[s.listBody, { backgroundColor: colors.surface }]}>
+          <View style={[s.placeholderCard, { backgroundColor: isDark ? '#1C1C1E' : '#F9F9FB', borderColor: isDark ? '#2C2C2E' : '#EDEEF2' }]}>
+            <Ionicons name="stats-chart" size={40} color={colors.textTertiary} />
+            <Text style={[s.placeholderText, { color: colors.textSecondary }]}>Detailed insights coming soon</Text>
           </View>
         </View>
 
@@ -94,24 +84,18 @@ export default function ActivityScreen() {
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: C.surface },
+  root: { flex: 1 },
   scroll: { flex: 1, zIndex: 10 },
   scrollContent: { paddingBottom: 0 },
-  pinnedHeader: { position: 'absolute', top: 0, left: 0, right: 0, backgroundColor: C.surface, zIndex: 100 },
+  pinnedHeader: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 100 },
   headerContentPadded: { paddingHorizontal: 16, paddingBottom: 15, paddingTop: Platform.OS === 'web' ? 10 : 0 },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) + 10 : 10, marginBottom: 5 },
-  logoRow: { flexDirection: 'row', alignItems: 'center', gap: 7 },
-  logoText: { fontFamily: 'Inter_700Bold', fontSize: 18, fontWeight: '700', letterSpacing: -1, fontStyle: "italic", color: '#111111' },
-  headerIconGroup: { flexDirection: 'row', gap: 8 },
-  squareBtn: { width: 36, height: 36, borderRadius: 10, backgroundColor: '#F5F5F7', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#E8E8ED' },
 
-  stickyFilterContainer: { backgroundColor: C.surface, zIndex: 10 },
-  filterWrapper: { paddingHorizontal: 14, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: C.separator },
+  stickyFilterContainer: { zIndex: 10 },
+  filterWrapper: { paddingHorizontal: 14, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth },
   filterRow: { gap: 8, alignItems: 'center' },
-  filterPill: { paddingHorizontal: 16, paddingVertical: 7, borderRadius: 20, backgroundColor: '#F4F4F6' },
-  filterPillActive: { backgroundColor: '#F2F2F7', borderWidth: 1, borderColor: C.dark },
+  filterPill: { paddingHorizontal: 16, paddingVertical: 7, borderRadius: 20 },
 
-  listBody: { backgroundColor: C.surface, paddingHorizontal: 14, paddingBottom: 40 },
-  placeholderCard: { height: 200, backgroundColor: '#F9F9FB', borderRadius: 24, borderStyle: 'dashed', borderWidth: 1.5, borderColor: '#EDEEF2', justifyContent: 'center', alignItems: 'center', marginTop: 20 },
-  placeholderText: { fontFamily: 'Inter_500Medium', fontSize: 14, color: '#A0A0A5', marginTop: 12 },
+  listBody: { paddingHorizontal: 14, paddingBottom: 40 },
+  placeholderCard: { height: 200, borderRadius: 24, borderStyle: 'dashed', borderWidth: 1.5, justifyContent: 'center', alignItems: 'center', marginTop: 20 },
+  placeholderText: { fontFamily: 'Inter_500Medium', fontSize: 14, marginTop: 12 },
 });

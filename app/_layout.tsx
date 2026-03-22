@@ -5,25 +5,25 @@ import {
   Inter_700Bold,
   useFonts,
 } from '@expo-google-fonts/inter';
-import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { Collection, DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { View } from 'react-native';
 import 'react-native-reanimated';
 import { BudgetProvider } from '../store/budgetStore';
 import { CategoryProvider } from '../store/categoryStore';
 import { TransactionProvider } from '../store/transactionStore';
-import { SavingsProvider } from '../store/savingsStore'; // NEW
+import { SavingsProvider } from '../store/savingsStore';
+import { useThemeStore } from '../store/themeStore';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 SplashScreen.preventAutoHideAsync();
 
 export const unstable_settings = {
   anchor: '(tabs)',
 };
-
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -32,6 +32,24 @@ export default function RootLayout() {
     Inter_600SemiBold,
     Inter_700Bold,
   });
+
+  const { isDark, colors } = useThemeStore();
+
+  const theme = useMemo(() => {
+     const base = isDark ? DarkTheme : DefaultTheme;
+     return {
+        ...base,
+        colors: {
+           ...base.colors,
+           primary: colors.accent,
+           background: colors.surface,
+           card: colors.surface,
+           text: colors.text,
+           border: colors.separator,
+           notification: colors.accent,
+        }
+     };
+  }, [isDark, colors]);
 
   useEffect(() => {
     if (fontsLoaded) {
@@ -49,7 +67,7 @@ export default function RootLayout() {
         <BudgetProvider>
           <CategoryProvider>
             <TransactionProvider>
-              <ThemeProvider value={DefaultTheme}>
+              <ThemeProvider value={theme}>
                 <Stack>
                   <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                   <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
@@ -57,7 +75,7 @@ export default function RootLayout() {
                   <Stack.Screen name="create-category" options={{ presentation: 'modal' }} />
                   <Stack.Screen name="add-transaction" options={{ presentation: 'modal' }} />
                 </Stack>
-                <StatusBar style="dark" />
+                <StatusBar style={isDark ? "light" : "dark"} />
               </ThemeProvider>
             </TransactionProvider>
           </CategoryProvider>

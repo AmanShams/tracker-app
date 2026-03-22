@@ -17,23 +17,12 @@ import { typography } from '@/constants/typography';
 import { ConfirmModal } from '../../components/confirm-modal';
 import { MainHeader } from '../../components/main-header';
 import { CategoryType, useCategories } from '../../store/categoryStore';
-
-const C = {
-  bg: '#F2F2F7',
-  surface: '#FFFFFF',
-  dark: '#111111',
-  primary: '#111111',
-  secondary: '#8E8E93',
-  tertiary: '#C7C7CC',
-  accent: '#7C6EEA',
-  green: '#16A34A',
-  separator: '#F0F0F3',
-};
-
+import { useThemeStore } from '../../store/themeStore';
 
 // ─── Shared Components ─────────────────────────────────────────────────────────
 function CategoriesTabs({ active, onSelect }: { active: CategoryType; onSelect: (f: CategoryType) => void }) {
   const tabs: CategoryType[] = ['expense', 'income'];
+  const { colors } = useThemeStore();
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.filterRow}>
       {tabs.map((f) => {
@@ -44,9 +33,9 @@ function CategoriesTabs({ active, onSelect }: { active: CategoryType; onSelect: 
             key={f}
             onPress={() => onSelect(f)}
             activeOpacity={0.7}
-            style={[s.filterPill, isActive && s.filterPillActive]}
+            style={[s.filterPill, { backgroundColor: colors.bg }, isActive && { backgroundColor: colors.accent + '20', borderColor: colors.accent, borderWidth: 1 }]}
           >
-            <Text style={isActive ? typography.filterActive : typography.filterInactive}>{label}</Text>
+            <Text style={[isActive ? typography.filterActive : typography.filterInactive, { color: isActive ? colors.accent : colors.textSecondary }]}>{label}</Text>
           </TouchableOpacity>
         );
       })}
@@ -57,6 +46,7 @@ function CategoriesTabs({ active, onSelect }: { active: CategoryType; onSelect: 
 export default function CategoriesScreen() {
   const router = useRouter();
   const { categories, deleteCategory } = useCategories();
+  const { isDark, colors } = useThemeStore();
   const [activeTab, setActiveTab] = useState<CategoryType>('expense');
   const [pinnedHeaderH, setPinnedHeaderH] = useState(130);
 
@@ -77,23 +67,23 @@ export default function CategoriesScreen() {
   };
 
   return (
-    <View style={s.root}>
+    <View style={[s.root, { backgroundColor: colors.surface }]}>
       <Stack.Screen options={{ headerShown: false }} />
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
 
       {/* 1. Header (FIXED) */}
-      <View style={s.pinnedHeader} onLayout={onPinnedLayout}>
+      <View style={[s.pinnedHeader, { backgroundColor: colors.surface }]} onLayout={onPinnedLayout}>
         <SafeAreaView>
           <View style={s.headerContentPadded}>
             <MainHeader actions={[{ icon: 'settings-outline' }]} />
             <View style={s.titleRow}>
-              <Text style={[typography.headingLarge, { fontSize: 28 }]}>Categories</Text>
+              <Text style={[typography.headingLarge, { fontSize: 28, color: colors.text }]}>Categories</Text>
               <TouchableOpacity
-                style={s.addBtnHeader}
+                style={[s.addBtnHeader, { backgroundColor: isDark ? '#1C1C1E' : '#F5F5F7', borderColor: isDark ? '#2C2C2E' : '#E8E8ED' }]}
                 activeOpacity={0.7}
                 onPress={() => router.push('/create-category')}
               >
-                <Ionicons name="add" size={24} color={C.primary} />
+                <Ionicons name="add" size={24} color={colors.text} />
               </TouchableOpacity>
             </View>
           </View>
@@ -108,42 +98,42 @@ export default function CategoriesScreen() {
         stickyHeaderIndices={[0]}
       >
         {/* Sticky Filter Only (BELT REMOVED) */}
-        <View style={s.stickyFilterContainer}>
-          <View style={s.filterWrapper}>
+        <View style={[s.stickyFilterContainer, { backgroundColor: colors.surface }]}>
+          <View style={[s.filterWrapper, { borderBottomColor: colors.separator }]}>
             <CategoriesTabs active={activeTab} onSelect={setActiveTab} />
           </View>
         </View>
 
         {/* Categories List Body */}
-        <View style={s.listBody}>
-          <View style={s.list}>
+        <View style={[s.listBody, { backgroundColor: colors.surface }]}>
+          <View style={[s.list, { backgroundColor: colors.surface }]}>
             {filteredCategories.map((item, i) => (
               <View key={item.id}>
                 <View style={s.row}>
-                  <View style={s.iconOuter}>
-                    <View style={[s.iconBox, { backgroundColor: item.color + '12', borderColor: item.color + '20' }]}>
+                  <View style={[s.iconOuter, { backgroundColor: colors.surface, borderColor: isDark ? '#1C1C1E' : '#f8f8f8' }]}>
+                    <View style={[s.iconBox, { backgroundColor: item.color + '12', borderColor: isDark ? item.color + '40' : item.color + '20' }]}>
                       <Ionicons name={item.icon as any} size={15} color={item.color} />
                     </View>
                   </View>
                   <View style={s.textSide}>
-                    <Text style={typography.txTitle} numberOfLines={1}>{item.name}</Text>
-                    <Text style={[typography.txSubtitle, { marginTop: 1 }]} numberOfLines={1}>Created: {item.createdAt}</Text>
+                    <Text style={[typography.txTitle, { color: colors.text }]} numberOfLines={1}>{item.name}</Text>
+                    <Text style={[typography.txSubtitle, { marginTop: 1, color: colors.textSecondary }]} numberOfLines={1}>Created: {item.createdAt}</Text>
                   </View>
                   <View style={s.actions}>
                     <TouchableOpacity activeOpacity={0.7} style={s.miniBtn}>
-                      <Ionicons name="pencil-outline" size={16} color={C.tertiary} />
+                      <Ionicons name="pencil-outline" size={16} color={colors.textTertiary} />
                     </TouchableOpacity>
                     <TouchableOpacity activeOpacity={0.7} style={s.miniBtn} onPress={() => handleDeleteTrigger(item.id, item.name)}>
-                      <Ionicons name="trash-outline" size={16} color="#FF3B30" />
+                      <Ionicons name="trash-outline" size={16} color={colors.red} />
                     </TouchableOpacity>
                   </View>
                 </View>
-                {i < filteredCategories.length - 1 && <View style={s.separator} />}
+                {i < filteredCategories.length - 1 && <View style={[s.separator, { backgroundColor: colors.separator }]} />}
               </View>
             ))}
             {filteredCategories.length === 0 && (
               <View style={{ paddingTop: 40, alignItems: 'center' }}>
-                <Text style={{ fontFamily: 'Inter_400Regular', color: '#999', fontSize: 14 }}>No categories yet</Text>
+                <Text style={{ fontFamily: 'Inter_400Regular', color: colors.textTertiary, fontSize: 14 }}>No categories yet</Text>
               </View>
             )}
           </View>
@@ -165,7 +155,7 @@ export default function CategoriesScreen() {
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: C.surface },
+  root: { flex: 1 },
   scroll: { flex: 1, zIndex: 10 },
   scrollContent: { paddingBottom: 0 },
 
@@ -174,42 +164,28 @@ const s = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    backgroundColor: C.surface,
-    zIndex: 100,
+    zIndex: 10,
   },
   headerContentPadded: {
     paddingHorizontal: 16,
     paddingBottom: 15,
     paddingTop: Platform.OS === 'web' ? 10 : 0,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) + 10 : 10,
-    marginBottom: 5,
-  },
-  logoRow: { flexDirection: 'row', alignItems: 'center', gap: 7 },
-  logoText: { fontFamily: 'Inter_700Bold', fontSize: 18, fontWeight: '700', letterSpacing: -1, fontStyle: "italic", color: '#111111' },
-  headerIconGroup: { flexDirection: 'row', gap: 8 },
-  squareBtn: { width: 36, height: 36, borderRadius: 10, backgroundColor: '#F5F5F7', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#E8E8ED' },
-
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  addBtnHeader: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#F5F5F7', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#E8E8ED' },
+  addBtnHeader: { width: 40, height: 40, borderRadius: 12, justifyContent: 'center', alignItems: 'center', borderWidth: 1 },
 
-  stickyFilterContainer: { backgroundColor: C.surface, zIndex: 10 },
-  filterWrapper: { paddingHorizontal: 14, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: C.separator },
+  stickyFilterContainer: { zIndex: 10 },
+  filterWrapper: { paddingHorizontal: 14, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth },
   filterRow: { gap: 8, alignItems: 'center' },
-  filterPill: { paddingHorizontal: 16, paddingVertical: 7, borderRadius: 20, backgroundColor: '#F4F4F6' },
-  filterPillActive: { backgroundColor: '#F2F2F7', borderWidth: 1, borderColor: C.dark },
+  filterPill: { paddingHorizontal: 16, paddingVertical: 7, borderRadius: 20 },
 
-  listBody: { backgroundColor: C.surface, paddingHorizontal: 14, paddingBottom: 40 },
+  listBody: { paddingHorizontal: 14, paddingBottom: 40 },
   list: {},
   row: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10 },
-  iconOuter: { width: 44, height: 44, borderRadius: 13, borderWidth: 1, borderColor: '#f8f8f8', padding: 1, marginRight: 12, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' },
-  iconBox: { width: 38, height: 38, borderRadius: 11, borderWidth: 1.3, borderColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center', flexShrink: 0 },
+  iconOuter: { width: 44, height: 44, borderRadius: 13, borderWidth: 1, padding: 1, marginRight: 12, alignItems: 'center', justifyContent: 'center' },
+  iconBox: { width: 38, height: 38, borderRadius: 11, borderWidth: 1.3, justifyContent: 'center', alignItems: 'center', flexShrink: 0 },
   textSide: { flex: 1, marginRight: 8 },
-  separator: { height: StyleSheet.hairlineWidth, backgroundColor: C.separator, marginLeft: 44 + 12 },
+  separator: { height: StyleSheet.hairlineWidth, marginLeft: 44 + 12 },
 
   actions: { flexDirection: 'row', gap: 4 },
   miniBtn: { width: 32, height: 32, justifyContent: 'center', alignItems: 'center' },

@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useThemeStore } from '../../store/themeStore';
 
 // ─── Micro Interactions ──────────────────────────────────────────────────────
 function AnimatedScale({ children, onPress, style }: { children: React.ReactNode; onPress?: () => void; style?: any }) {
@@ -46,13 +47,15 @@ function AnimatedScale({ children, onPress, style }: { children: React.ReactNode
 
 // ─── Custom Tab Bar Container ──────────────────────────────────────────────────
 function CustomTabBar({ state, descriptors, navigation }: any) {
+  const { colors, isDark } = useThemeStore();
+  
   return (
-    <View style={styles.tabBarContainer}>
-      <View style={[styles.invertedCorner, { left: 0 }]}>
-        <View style={[styles.invertedCornerInner, { borderBottomLeftRadius: 32 }]} />
+    <View style={[styles.tabBarContainer, { backgroundColor: isDark ? colors.bg : '#000000' }]}>
+      <View style={[styles.invertedCorner, { left: 0, backgroundColor: isDark ? colors.bg : '#000000' }]}>
+        <View style={[styles.invertedCornerInner, { borderBottomLeftRadius: 32, backgroundColor: colors.surface }]} />
       </View>
-      <View style={[styles.invertedCorner, { right: 0 }]}>
-        <View style={[styles.invertedCornerInner, { borderBottomRightRadius: 32 }]} />
+      <View style={[styles.invertedCorner, { right: 0, backgroundColor: isDark ? colors.bg : '#000000' }]}>
+        <View style={[styles.invertedCornerInner, { borderBottomRightRadius: 32, backgroundColor: colors.surface }]} />
       </View>
 
       <View style={styles.tabBar}>
@@ -138,7 +141,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#000000',
     paddingTop: 8,
     paddingBottom: Platform.OS === 'ios' ? 30 : 15,
     zIndex: 1000,
@@ -148,11 +150,9 @@ const styles = StyleSheet.create({
     top: -32,
     width: 32,
     height: 32,
-    backgroundColor: '#000000',
   },
   invertedCornerInner: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
   },
   tabBar: {
     flexDirection: 'row',
