@@ -4,32 +4,27 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export type ThemeMode = 'dark' | 'light' | 'light-dark-nav' | 'dark-light-nav';
 
-export interface Theme {
-  mode: ThemeMode;
-  isDark: boolean;
-  colors: {
-    bg: string;
-    surface: string;
-    text: string;
-    textSecondary: string;
-    textTertiary: string;
-    border: string;
-    cardBorder: string;
-    primary: string;
-    separator: string;
-    accent: string;
-    green: string;
-    red: string;
-    // Dynamic Nav Bar and Belt Colors
-    navBg: string;
-    navActive: string;
-    navInactive: string;
-    beltBg: string;
-    beltInnerBg: string;
-    beltText: string;
-    beltIconBg: string;
-    beltBorder: string;
-  };
+export interface ThemeColors {
+  bg: string;
+  surface: string;
+  text: string;
+  textSecondary: string;
+  textTertiary: string;
+  border: string;
+  cardBorder: string;
+  primary: string;
+  separator: string;
+  accent: string;
+  green: string;
+  red: string;
+  navBg: string;
+  navActive: string;
+  navInactive: string;
+  beltBg: string;
+  beltInnerBg: string;
+  beltText: string;
+  beltIconBg: string;
+  beltBorder: string;
 }
 
 const baseLight = {
@@ -48,15 +43,15 @@ const baseLight = {
 };
 
 const baseDark = {
-  bg: '#000000',
-  surface: '#121212',
+  bg: '#1C1C1E',
+  surface: '#2C2C2E',
   text: '#FFFFFF',
   textSecondary: '#A1A1A1',
   textTertiary: '#48484A',
-  border: '#2C2C2E',
-  cardBorder: '#1C1C1E',
+  border: '#3A3A3C',
+  cardBorder: '#3A3A3C',
   primary: '#FFFFFF',
-  separator: '#2C2C2E',
+  separator: '#3A3A3C',
   accent: '#7C6EEA',
   green: '#16A34A',
   red: '#FF453A',
@@ -76,21 +71,21 @@ const navDark = {
 
 const beltLight = {
   beltBg: '#FFFFFF',
-  beltInnerBg: '#F2F2F7',
+  beltInnerBg: '#FFFFFF', // Pure white buttons as requested
   beltText: '#111111',
-  beltIconBg: '#E8E8ED',
-  beltBorder: 'rgba(17,17,17,0.08)',
+  beltIconBg: '#F2F2F7', // Slightly grey icon circle
+  beltBorder: 'rgba(17,17,17,0.1)', // Subtle border for definition on white
 };
 
 const beltDark = {
   beltBg: '#000000',
-  beltInnerBg: '#1C1C1E',
+  beltInnerBg: '#000000',
   beltText: '#FFFFFF',
-  beltIconBg: '#262628',
-  beltBorder: 'rgba(255,255,255,0.08)',
+  beltIconBg: '#1C1C1E',
+  beltBorder: 'rgba(255,255,255,0.12)',
 };
 
-export const themes: Record<ThemeMode, Omit<Theme, 'mode'>> = {
+export const themes: Record<ThemeMode, { isDark: boolean; colors: ThemeColors }> = {
   'dark': {
     isDark: true,
     colors: { ...baseDark, ...navDark, ...beltDark },
@@ -109,7 +104,10 @@ export const themes: Record<ThemeMode, Omit<Theme, 'mode'>> = {
   },
 };
 
-interface ThemeStore extends Theme {
+interface ThemeStore {
+  mode: ThemeMode;
+  isDark: boolean;
+  colors: ThemeColors;
   setMode: (mode: ThemeMode) => void;
   toggleTheme: () => void;
 }
@@ -121,15 +119,16 @@ export const useThemeStore = create<ThemeStore>()(
     (set) => ({
       mode: 'light-dark-nav',
       ...themes['light-dark-nav'],
+      
       setMode: (newMode) => set({ mode: newMode, ...themes[newMode] }),
       toggleTheme: () => set((state) => {
-        const idx = themeOrder.indexOf(state?.mode || 'light-dark-nav');
+        const idx = themeOrder.indexOf(state.mode);
         const nextMode = themeOrder[(idx + 1) % themeOrder.length];
         return { mode: nextMode, ...themes[nextMode] };
       }),
     }),
     {
-      name: 'theme-storage',
+      name: 'theme-storage-vfinal-4', // Hard reset for the pure white update
       storage: createJSONStorage(() => AsyncStorage),
     }
   )
