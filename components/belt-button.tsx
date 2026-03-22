@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { AnimatedScale } from './animated-scale';
+import { useThemeStore } from '../store/themeStore';
 
 interface BeltButtonProps {
   label: string;
@@ -10,16 +11,37 @@ interface BeltButtonProps {
 }
 
 export function BeltButton({ label, icon, onPress, style }: BeltButtonProps) {
+  const { colors } = useThemeStore();
+  
   return (
     <AnimatedScale 
-      style={[styles.beltBtnOuter, style]}
+      style={[
+        styles.beltBtnOuter, 
+        { 
+          backgroundColor: colors.beltBg, 
+          borderColor: colors.beltBorder 
+        }, 
+        style
+      ]}
       onPress={onPress}
     >
-      <View style={styles.beltBtnInner}>
-        <View style={styles.beltIconCircle}>
+      <View style={[
+        styles.beltBtnInner, 
+        { 
+          backgroundColor: colors.beltInnerBg,
+          borderColor: colors.beltBorder
+        }
+      ]}>
+        <View style={[
+          styles.beltIconCircle,
+          {
+            backgroundColor: colors.beltIconBg,
+            borderColor: colors.beltBorder
+          }
+        ]}>
           {icon}
         </View>
-        <Text style={styles.beltActionLabel}>{label}</Text>
+        <Text style={[styles.beltActionLabel, { color: colors.beltText }]}>{label}</Text>
       </View>
     </AnimatedScale>
   );
@@ -30,8 +52,6 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
-    backgroundColor: '#000000',
     padding: 1.5,
     overflow: 'hidden',
   },
@@ -41,8 +61,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 23,
     borderWidth: 1.2,
-    borderColor: 'rgba(255,255,255,0.05)',
-    backgroundColor: '#1C1C1E',
     gap: 7,
     paddingHorizontal: 20,
     height: '100%',
@@ -52,15 +70,12 @@ const styles = StyleSheet.create({
     height: 26,
     borderRadius: 13,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.12)',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#262628',
   },
   beltActionLabel: {
     fontFamily: 'Inter_600SemiBold',
     fontSize: 12,
-    color: '#FFFFFF',
     letterSpacing: -0.3,
   },
 });

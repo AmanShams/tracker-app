@@ -23,7 +23,7 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { transactions, balance } = useTransactions();
   const { budgets } = useBudgets();
-  const { isDark, toggleTheme, colors } = useThemeStore();
+  const { isDark, mode, setMode, toggleTheme, colors } = useThemeStore();
   const [pinnedHeaderH, setPinnedHeaderH] = useState(130);
 
   const onPinnedLayout = useCallback((event: LayoutChangeEvent) => {
@@ -31,10 +31,22 @@ export default function ProfileScreen() {
     if (height > 0) setPinnedHeaderH(height);
   }, []);
 
-  const settings = [
+  const getThemeDisplay = () => {
+    switch (mode) {
+      case 'light': return 'Light';
+      case 'dark': return 'Dark';
+      case 'light-dark-nav': return 'Light (Dark Nav)';
+      case 'dark-light-nav': return 'Dark (Light Nav)';
+      default: return 'Theme';
+    }
+  };
+
+  type SettingItem = { id: string; title: string; icon: string; isToggle?: boolean; isThemeRow?: boolean; };
+
+  const settings: SettingItem[] = [
     { id: '1', title: 'Personal Info', icon: 'person-outline' },
     { id: '2', title: 'Security', icon: 'shield-checkmark-outline' },
-    { id: 'dark_mode', title: 'Dark Mode', icon: isDark ? 'moon' : 'moon-outline', isToggle: true },
+    { id: 'dark_mode', title: `Theme: ${getThemeDisplay()}`, icon: isDark ? 'moon' : 'moon-outline', isThemeRow: true },
     { id: '3', title: 'Payment Methods', icon: 'card-outline' },
     { id: '4', title: 'Data & Privacy', icon: 'finger-print-outline' },
     { id: '5', title: 'Help & Support', icon: 'help-circle-outline' },
@@ -107,7 +119,29 @@ export default function ProfileScreen() {
                    <View style={s.menuTextSide}>
                       <Text style={[s.menuTitleText, { color: colors.text }]}>{item.title}</Text>
                    </View>
-                   {item.isToggle ? (
+                   {item.isThemeRow ? (
+                      <View style={{ flexDirection: 'row', gap: 6 }}>
+                         {([
+                           { m: 'light', icon: 'sunny' },
+                           { m: 'light-dark-nav', icon: 'partly-sunny' },
+                           { m: 'dark', icon: 'moon' },
+                           { m: 'dark-light-nav', icon: 'moon-outline' },
+                         ] as const).map(t => (
+                           <TouchableOpacity
+                             key={t.m}
+                             activeOpacity={0.7}
+                             onPress={() => setMode(t.m)}
+                             style={[
+                               s.themeIconBtn,
+                               { backgroundColor: isDark ? '#1C1C1E' : '#F5F5F7', borderColor: isDark ? '#2C2C2E' : '#E8E8ED' },
+                               mode === t.m && { backgroundColor: colors.accent + '20', borderColor: colors.accent }
+                             ]}
+                           >
+                             <Ionicons name={t.icon as any} size={15} color={mode === t.m ? colors.accent : colors.textTertiary} />
+                           </TouchableOpacity>
+                         ))}
+                      </View>
+                   ) : item.isToggle ? (
                       <View style={[s.toggleTrack, { backgroundColor: isDark ? colors.accent : (isDark ? '#3A3A3C' : '#EAEAED') }, isDark && { backgroundColor: '#32D74B' }]}>
                          <View style={[s.toggleKnob, isDark && s.toggleKnobActive]} />
                       </View>
@@ -171,4 +205,6 @@ const s = StyleSheet.create({
   toggleTrack: { width: 34, height: 18, borderRadius: 10, paddingHorizontal: 2, justifyContent: 'center' },
   toggleKnob: { width: 14, height: 14, borderRadius: 7, backgroundColor: '#FFFFFF' },
   toggleKnobActive: { alignSelf: 'flex-end' },
+
+  themeIconBtn: { width: 32, height: 32, borderRadius: 10, borderWidth: 1, justifyContent: 'center', alignItems: 'center' },
 });

@@ -132,10 +132,11 @@ function StatCards() {
 // ─── Action Belt ─────────────────────────────────────────────────────────────
 function ActionBelt() {
   const router = useRouter();
+  const { colors } = useThemeStore();
   const actions = [
-    { label: 'Spent', icon: <Ionicons name="add-outline" size={18} color="#FFF" />, route: '/add-transaction', type: 'expense' },
-    { label: 'Receive', icon: <Ionicons name="arrow-down-outline" size={15} color="#FFF" />, route: '/add-transaction', type: 'income' },
-    { label: 'Add', icon: <Ionicons name="add-outline" size={18} color="#FFF" />, route: '/set-budget' },
+    { label: 'Spent', icon: <Ionicons name="add-outline" size={18} color={colors.beltText} />, route: '/add-transaction', type: 'expense' },
+    { label: 'Receive', icon: <Ionicons name="arrow-down-outline" size={15} color={colors.beltText} />, route: '/add-transaction', type: 'income' },
+    { label: 'Add', icon: <Ionicons name="add-outline" size={18} color={colors.beltText} />, route: '/set-budget' },
   ];
 
   return (
@@ -246,12 +247,12 @@ export default function HomeScreen() {
 
         <View style={s.stickyBumper}>
           <View style={s.shadowWrapper}>
-            <View style={[s.overlapSheet, { backgroundColor: isDark ? colors.bg : '#111111' }]}>
+            <View style={[s.overlapSheet, { backgroundColor: colors.beltBg }]}>
               <ActionBelt />
             </View>
           </View>
 
-          <View style={{ backgroundColor: isDark ? colors.bg : '#111111' }}>
+          <View style={{ backgroundColor: colors.beltBg }}>
             <View style={[s.txSectionHeaderSticky, { backgroundColor: colors.surface }]}>
               <View style={s.txHeaderMain}>
                 <Text style={[typography.headingLarge, { fontSize: 24, color: colors.text }]}>Transactions</Text>

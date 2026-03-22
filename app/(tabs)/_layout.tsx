@@ -47,14 +47,14 @@ function AnimatedScale({ children, onPress, style }: { children: React.ReactNode
 
 // ─── Custom Tab Bar Container ──────────────────────────────────────────────────
 function CustomTabBar({ state, descriptors, navigation }: any) {
-  const { colors, isDark } = useThemeStore();
+  const { colors } = useThemeStore();
   
   return (
-    <View style={[styles.tabBarContainer, { backgroundColor: isDark ? colors.bg : '#000000' }]}>
-      <View style={[styles.invertedCorner, { left: 0, backgroundColor: isDark ? colors.bg : '#000000' }]}>
+    <View style={[styles.tabBarContainer, { backgroundColor: colors.navBg }]}>
+      <View style={[styles.invertedCorner, { left: 0, backgroundColor: colors.navBg }]}>
         <View style={[styles.invertedCornerInner, { borderBottomLeftRadius: 32, backgroundColor: colors.surface }]} />
       </View>
-      <View style={[styles.invertedCorner, { right: 0, backgroundColor: isDark ? colors.bg : '#000000' }]}>
+      <View style={[styles.invertedCorner, { right: 0, backgroundColor: colors.navBg }]}>
         <View style={[styles.invertedCornerInner, { borderBottomRightRadius: 32, backgroundColor: colors.surface }]} />
       </View>
 
@@ -90,6 +90,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
 
 // ─── Tab Item (Icon Only) ───────────────────────────────────────────────────
 function TabItem({ isFocused, onPress, routeName }: { isFocused: boolean; onPress: () => void; routeName: string }) {
+  const { colors } = useThemeStore();
   const getIcon = (name: string, focused: boolean) => {
     switch (name) {
       case 'index': return focused ? 'home' : 'home-outline';
@@ -110,7 +111,7 @@ function TabItem({ isFocused, onPress, routeName }: { isFocused: boolean; onPres
         <Ionicons
           name={getIcon(routeName, isFocused) as any}
           size={20}
-          color={isFocused ? "#FFFFFF" : "rgba(255,255,255,0.4)"}
+          color={isFocused ? colors.navActive : colors.navInactive}
         />
       </AnimatedScale>
     </View>
