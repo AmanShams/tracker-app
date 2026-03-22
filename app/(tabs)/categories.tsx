@@ -14,8 +14,9 @@ import {
 } from 'react-native';
 
 import { typography } from '@/constants/typography';
-import { CategoryType, useCategories } from '../../store/categoryStore';
 import { ConfirmModal } from '../../components/confirm-modal';
+import { MainHeader } from '../../components/main-header';
+import { CategoryType, useCategories } from '../../store/categoryStore';
 
 const C = {
   bg: '#F2F2F7',
@@ -29,21 +30,6 @@ const C = {
   separator: '#F0F0F3',
 };
 
-// ─── Header ───────────────────────────────────────────────────────────────────
-function Header() {
-  return (
-    <View style={s.header}>
-      <View style={s.logoRow}>
-        <Text style={s.logoText}>MANs Tracker</Text>
-      </View>
-      <View style={s.headerIconGroup}>
-        <TouchableOpacity activeOpacity={0.7} style={s.squareBtn}>
-          <Ionicons name="settings-outline" size={16} color={C.primary} />
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-}
 
 // ─── Shared Components ─────────────────────────────────────────────────────────
 function CategoriesTabs({ active, onSelect }: { active: CategoryType; onSelect: (f: CategoryType) => void }) {
@@ -99,7 +85,7 @@ export default function CategoriesScreen() {
       <View style={s.pinnedHeader} onLayout={onPinnedLayout}>
         <SafeAreaView>
           <View style={s.headerContentPadded}>
-            <Header />
+            <MainHeader actions={[{ icon: 'settings-outline' }]} />
             <View style={s.titleRow}>
               <Text style={[typography.headingLarge, { fontSize: 28 }]}>Categories</Text>
               <TouchableOpacity

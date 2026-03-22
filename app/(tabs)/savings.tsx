@@ -16,6 +16,7 @@ import {
 import { typography } from '@/constants/typography';
 import { useBudgets } from '../../store/budgetStore';
 import { ConfirmModal } from '../../components/confirm-modal';
+import { MainHeader } from '../../components/main-header';
 
 const C = {
   bg: '#F2F2F7',
@@ -29,21 +30,6 @@ const C = {
   separator: '#F0F0F3',
 };
 
-// ─── Header ───────────────────────────────────────────────────────────────────
-function Header() {
-  return (
-    <View style={s.header}>
-      <View style={s.logoRow}>
-        <Text style={s.logoText}>MANs Tracker</Text>
-      </View>
-      <View style={s.headerIconGroup}>
-        <TouchableOpacity activeOpacity={0.7} style={s.squareBtn}>
-          <Ionicons name="settings-outline" size={16} color={C.primary} />
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-}
 
 // ─── Shared Components ─────────────────────────────────────────────────────────
 function StatValueRow({ label, amount, color }: { label: string; amount: number; color?: string }) {
@@ -98,7 +84,7 @@ export default function SavingsScreen() {
       <View style={s.pinnedHeader} onLayout={onPinnedLayout}>
         <SafeAreaView>
           <View style={s.headerContentPadded}>
-            <Header />
+            <MainHeader actions={[{ icon: 'settings-outline' }]} />
             <View style={s.titleRow}>
               <Text style={[typography.headingLarge, { fontSize: 28 }]}>Budgets</Text>
               <TouchableOpacity

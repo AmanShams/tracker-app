@@ -18,6 +18,7 @@ import {
 
 import { typography } from '@/constants/typography';
 import { BeltButton } from '../../components/belt-button';
+import { MainHeader } from '../../components/main-header';
 import { Budget, useBudgets } from '../../store/budgetStore';
 import { Transaction as TxType, useTransactions } from '../../store/transactionStore';
 
@@ -40,24 +41,6 @@ const C = {
 const SPACE = { xs: 4, sm: 8, md: 12, base: 16, lg: 20, xl: 24, xxl: 32 };
 const FILTERS = ['All', 'Expense', 'Income'];
 
-// ─── Header ───────────────────────────────────────────────────────────────────
-function Header() {
-  return (
-    <View style={s.header}>
-      <View style={s.logoRow}>
-        <Text style={s.logoText}>MANs Tracker</Text>
-      </View>
-      <View style={s.headerIconGroup}>
-        <TouchableOpacity activeOpacity={0.7} style={s.squareBtn}>
-          <Ionicons name="stats-chart-outline" size={16} color={C.primary} />
-        </TouchableOpacity>
-        <TouchableOpacity activeOpacity={0.7} style={s.squareBtn}>
-          <Ionicons name="card-outline" size={16} color={C.primary} />
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-}
 
 // ─── Balance Card ─────────────────────────────────────────────────────────────
 function BalanceCard() {
@@ -236,7 +219,12 @@ export default function HomeScreen() {
       <View style={s.pinnedHeader} onLayout={onPinnedLayout}>
         <SafeAreaView>
           <View style={s.headerContentPadded}>
-            <Header />
+            <MainHeader 
+              actions={[
+                { icon: 'stats-chart-outline' },
+                { icon: 'card-outline' }
+              ]} 
+            />
             <BalanceCard />
           </View>
         </SafeAreaView>
@@ -364,8 +352,8 @@ const s = StyleSheet.create({
   scrollContent: { paddingBottom: 0 },
   pinnedHeader: { position: 'absolute', top: 0, left: 0, right: 0, backgroundColor: C.surface, zIndex: 100 },
   headerContentPadded: { paddingHorizontal: 16, paddingBottom: 0, paddingTop: Platform.OS === 'web' ? 10 : 0 },
-  header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) + 6 : 6,
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    marginTop: Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) + 6 : 6,
     marginBottom: 6,
   },
   logoRow: { flexDirection: 'row', alignItems: 'center', gap: 7 },

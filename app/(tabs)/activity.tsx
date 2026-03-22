@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Stack } from 'expo-router';
-import React, { useState, useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   Dimensions,
+  LayoutChangeEvent,
   Platform,
   SafeAreaView,
   ScrollView,
@@ -11,17 +12,17 @@ import {
   Text,
   TouchableOpacity,
   View,
-  LayoutChangeEvent,
 } from 'react-native';
 
 import { typography } from '@/constants/typography';
+import { MainHeader } from '../../components/main-header';
 
 const SCREEN_H = Dimensions.get('window').height;
 
 const C = {
   bg: '#F2F2F7',
   surface: '#FFFFFF',
-  dark: '#111111', 
+  dark: '#111111',
   primary: '#111111',
   secondary: '#8E8E93',
   tertiary: '#C7C7CC',
@@ -30,21 +31,6 @@ const C = {
   separator: '#F0F0F3',
 };
 
-// ─── Header ───────────────────────────────────────────────────────────────────
-function Header() {
-  return (
-    <View style={s.header}>
-      <View style={s.logoRow}>
-        <Text style={s.logoText}>MANs Tracker</Text>
-      </View>
-      <View style={s.headerIconGroup}>
-        <TouchableOpacity activeOpacity={0.7} style={s.squareBtn}>
-          <Ionicons name="calendar-outline" size={16} color={C.primary} />
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-}
 
 export default function ActivityScreen() {
   const [pinnedHeaderH, setPinnedHeaderH] = useState(130);
@@ -64,15 +50,15 @@ export default function ActivityScreen() {
       <View style={s.pinnedHeader} onLayout={onPinnedLayout}>
         <SafeAreaView>
           <View style={s.headerContentPadded}>
-            <Header />
+            <MainHeader actions={[{ icon: 'calendar-outline' }]} />
             <Text style={[typography.headingLarge, { fontSize: 28 }]}>Activity</Text>
           </View>
         </SafeAreaView>
       </View>
 
       {/* 2. Scrolling Content */}
-      <ScrollView 
-        style={[s.scroll, { marginTop: pinnedHeaderH }]} 
+      <ScrollView
+        style={[s.scroll, { marginTop: pinnedHeaderH }]}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={s.scrollContent}
         stickyHeaderIndices={[0]}
@@ -82,8 +68,8 @@ export default function ActivityScreen() {
           <View style={s.filterWrapper}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.filterRow}>
               {['Week', 'Month', 'Year'].map(r => (
-                <TouchableOpacity 
-                  key={r} 
+                <TouchableOpacity
+                  key={r}
                   onPress={() => setActiveRange(r)}
                   style={[s.filterPill, activeRange === r && s.filterPillActive]}
                 >
@@ -95,10 +81,10 @@ export default function ActivityScreen() {
         </View>
 
         <View style={s.listBody}>
-           <View style={s.placeholderCard}>
-              <Ionicons name="stats-chart" size={40} color={C.tertiary} />
-              <Text style={s.placeholderText}>Detailed insights coming soon</Text>
-           </View>
+          <View style={s.placeholderCard}>
+            <Ionicons name="stats-chart" size={40} color={C.tertiary} />
+            <Text style={s.placeholderText}>Detailed insights coming soon</Text>
+          </View>
         </View>
 
         <View style={{ height: 120 }} />
