@@ -15,12 +15,15 @@ import 'react-native-reanimated';
 import { BudgetProvider } from '../store/budgetStore';
 import { CategoryProvider } from '../store/categoryStore';
 import { TransactionProvider } from '../store/transactionStore';
+import { SavingsProvider } from '../store/savingsStore'; // NEW
 
 SplashScreen.preventAutoHideAsync();
 
 export const unstable_settings = {
   anchor: '(tabs)',
 };
+
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -41,20 +44,25 @@ export default function RootLayout() {
   }
 
   return (
-    <BudgetProvider>
-      <CategoryProvider>
-        <TransactionProvider>
-          <ThemeProvider value={DefaultTheme}>
-            <Stack>
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-              <Stack.Screen name="set-budget" options={{ presentation: 'modal' }} />
-              <Stack.Screen name="create-category" options={{ presentation: 'modal' }} />
-            </Stack>
-            <StatusBar style="dark" />
-          </ThemeProvider>
-        </TransactionProvider>
-      </CategoryProvider>
-    </BudgetProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SavingsProvider>
+        <BudgetProvider>
+          <CategoryProvider>
+            <TransactionProvider>
+              <ThemeProvider value={DefaultTheme}>
+                <Stack>
+                  <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                  <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+                  <Stack.Screen name="set-budget" options={{ presentation: 'modal' }} />
+                  <Stack.Screen name="create-category" options={{ presentation: 'modal' }} />
+                  <Stack.Screen name="add-transaction" options={{ presentation: 'modal' }} />
+                </Stack>
+                <StatusBar style="dark" />
+              </ThemeProvider>
+            </TransactionProvider>
+          </CategoryProvider>
+        </BudgetProvider>
+      </SavingsProvider>
+    </GestureHandlerRootView>
   );
 }

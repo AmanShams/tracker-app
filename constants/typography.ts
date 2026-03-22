@@ -18,7 +18,7 @@ export const typography = {
     fontFamily: fonts.bold,
     fontSize: 46,
     fontWeight: '700' as const,
-    letterSpacing: -1.5,
+    letterSpacing: -2.2, // Tight tracking
     lineHeight: 52,
     color: '#111111',
   },
@@ -28,7 +28,7 @@ export const typography = {
     fontFamily: fonts.semiBold,
     fontSize: 20,
     fontWeight: '600' as const,
-    letterSpacing: -0.2,
+    letterSpacing: -0.8, // Tight tracking
     lineHeight: 26,
     color: '#111111',
   },
@@ -38,7 +38,7 @@ export const typography = {
     fontFamily: fonts.semiBold,
     fontSize: 15,
     fontWeight: '600' as const,
-    letterSpacing: 0,
+    letterSpacing: -0.4, // Tight tracking
     lineHeight: 20,
     color: '#111111',
   },
@@ -48,6 +48,7 @@ export const typography = {
     fontFamily: fonts.medium,
     fontSize: 16,
     fontWeight: '500' as const,
+    letterSpacing: -0.3, // Tight tracking
     lineHeight: 22,
     color: '#111111',
   },
@@ -57,6 +58,7 @@ export const typography = {
     fontFamily: fonts.medium,
     fontSize: 15,
     fontWeight: '500' as const,
+    letterSpacing: -0.2, // Tight tracking
     lineHeight: 20,
     color: '#111111',
   },
@@ -75,7 +77,7 @@ export const typography = {
     fontFamily: fonts.regular,
     fontSize: 11,
     fontWeight: '400' as const,
-    letterSpacing: 0.2,
+    letterSpacing: 0,
     lineHeight: 14,
     color: '#B0B0B0',
   },
@@ -85,7 +87,7 @@ export const typography = {
     fontFamily: fonts.semiBold,
     fontSize: 18,
     fontWeight: '600' as const,
-    letterSpacing: -0.3,
+    letterSpacing: -0.6, // Tight tracking
     lineHeight: 22,
     color: '#111111',
   },
@@ -95,7 +97,7 @@ export const typography = {
     fontFamily: fonts.medium,
     fontSize: 12,
     fontWeight: '500' as const,
-    letterSpacing: 0,
+    letterSpacing: -0.1, // Tight tracking
     lineHeight: 16,
     color: '#8E8E93',
   },
@@ -105,7 +107,7 @@ export const typography = {
     fontFamily: fonts.semiBold,
     fontSize: 13,
     fontWeight: '600' as const,
-    letterSpacing: 0.2,
+    letterSpacing: -0.2, // Tight tracking
     lineHeight: 18,
     color: '#FFFFFF',
   },
@@ -115,7 +117,7 @@ export const typography = {
     fontFamily: fonts.semiBold,
     fontSize: 15,
     fontWeight: '600' as const,
-    letterSpacing: -0.1,
+    letterSpacing: -0.5, // Tight tracking
     lineHeight: 20,
     color: '#111111',
   },
@@ -125,6 +127,7 @@ export const typography = {
     fontFamily: fonts.regular,
     fontSize: 12,
     fontWeight: '400' as const,
+    letterSpacing: -0.2, // Tight tracking
     lineHeight: 16,
     color: '#8E8E93',
   },
@@ -134,7 +137,7 @@ export const typography = {
     fontFamily: fonts.semiBold,
     fontSize: 15,
     fontWeight: '600' as const,
-    letterSpacing: -0.2,
+    letterSpacing: -0.6, // Tight tracking
     lineHeight: 20,
     color: '#16A34A',
   },
@@ -144,7 +147,7 @@ export const typography = {
     fontFamily: fonts.semiBold,
     fontSize: 15,
     fontWeight: '600' as const,
-    letterSpacing: -0.2,
+    letterSpacing: -0.6, // Tight tracking
     lineHeight: 20,
     color: '#FF3B30',
   },
@@ -154,7 +157,7 @@ export const typography = {
     fontFamily: fonts.medium,
     fontSize: 13,
     fontWeight: '500' as const,
-    letterSpacing: 0.1,
+    letterSpacing: -0.2, // Tight tracking
     lineHeight: 18,
     color: '#8E8E93',
   },
@@ -164,6 +167,7 @@ export const typography = {
     fontFamily: fonts.medium,
     fontSize: 13,
     fontWeight: '500' as const,
+    letterSpacing: -0.3, // Tight tracking
     lineHeight: 18,
     color: '#636366',
   },
@@ -173,6 +177,7 @@ export const typography = {
     fontFamily: fonts.semiBold,
     fontSize: 13,
     fontWeight: '600' as const,
+    letterSpacing: -0.3, // Tight tracking
     lineHeight: 18,
     color: '#B94FB0',
   },
@@ -182,6 +187,7 @@ export const typography = {
     fontFamily: fonts.medium,
     fontSize: 13,
     fontWeight: '500' as const,
+    letterSpacing: -0.2, // Tight tracking
     lineHeight: 18,
     color: '#8E8E93',
   },
@@ -191,7 +197,7 @@ export const typography = {
     fontFamily: fonts.bold,
     fontSize: 20,
     fontWeight: '800' as const,
-    letterSpacing: 3,
+    letterSpacing: -1.2, // Tight logo tracking
     color: '#111111',
   },
 };

@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
-import React, { useState, useMemo } from 'react';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useMemo, useState } from 'react';
 import {
   Platform,
   SafeAreaView,
@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { FormHeader } from '../components/form-header';
 
-import { useCategories, Category } from '../store/categoryStore';
+import { Category, useCategories } from '../store/categoryStore';
 import { useTransactions } from '../store/transactionStore';
 
 // ─── Design Tokens ────────────────────────────────────────────────────────────
@@ -180,9 +180,9 @@ export default function AddTransactionScreen() {
 
       {/* Save Button */}
       <View style={s.bottomContainer}>
-        <TouchableOpacity 
-          activeOpacity={0.8} 
-          style={[s.saveBtn, (!name || !amount || !selectedCategory) && { opacity: 0.5 }]} 
+        <TouchableOpacity
+          activeOpacity={0.8}
+          style={[s.saveBtn, (!name || !amount || !selectedCategory) && { opacity: 0.5 }]}
           onPress={handleSave}
           disabled={!name || !amount || !selectedCategory}
         >

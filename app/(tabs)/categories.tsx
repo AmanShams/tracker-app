@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
+  LayoutChangeEvent,
   Platform,
   SafeAreaView,
   ScrollView,
@@ -11,204 +12,201 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import { BeltButton } from '../../components/belt-button';
+
+import { typography } from '@/constants/typography';
 import { CategoryType, useCategories } from '../../store/categoryStore';
+
+const C = {
+  bg: '#F2F2F7',
+  surface: '#FFFFFF',
+  dark: '#111111',
+  primary: '#111111',
+  secondary: '#8E8E93',
+  tertiary: '#C7C7CC',
+  accent: '#7C6EEA',
+  green: '#16A34A',
+  separator: '#F0F0F3',
+};
+
+// ─── Header ───────────────────────────────────────────────────────────────────
+function Header() {
+  return (
+    <View style={s.header}>
+      <View style={s.logoRow}>
+        <Text style={s.logoText}>MANs Tracker</Text>
+      </View>
+      <View style={s.headerIconGroup}>
+        <TouchableOpacity activeOpacity={0.7} style={s.squareBtn}>
+          <Ionicons name="settings-outline" size={16} color={C.primary} />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
+// ─── Shared Components ─────────────────────────────────────────────────────────
+function CategoriesTabs({ active, onSelect }: { active: CategoryType; onSelect: (f: CategoryType) => void }) {
+  const tabs: CategoryType[] = ['expense', 'income'];
+  return (
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.filterRow}>
+      {tabs.map((f) => {
+        const isActive = f === active;
+        const label = f.charAt(0).toUpperCase() + f.slice(1);
+        return (
+          <TouchableOpacity
+            key={f}
+            onPress={() => onSelect(f)}
+            activeOpacity={0.7}
+            style={[s.filterPill, isActive && s.filterPillActive]}
+          >
+            <Text style={isActive ? typography.filterActive : typography.filterInactive}>{label}</Text>
+          </TouchableOpacity>
+        );
+      })}
+    </ScrollView>
+  );
+}
 
 export default function CategoriesScreen() {
   const router = useRouter();
   const { categories, deleteCategory } = useCategories();
   const [activeTab, setActiveTab] = useState<CategoryType>('expense');
+  const [pinnedHeaderH, setPinnedHeaderH] = useState(130);
 
   const filteredCategories = categories.filter(cat => cat.type === activeTab);
 
+  const onPinnedLayout = useCallback((event: LayoutChangeEvent) => {
+    const { height } = event.nativeEvent.layout;
+    if (height > 0) setPinnedHeaderH(height);
+  }, []);
+
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={s.root}>
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar barStyle="dark-content" />
 
-      {/* Custom Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Categories</Text>
-        <BeltButton
-          label="Add"
-          icon={<Ionicons name="add" size={18} color="#FFF" />}
-          onPress={() => router.push('/create-category')}
-        />
+      {/* 1. Header (FIXED) */}
+      <View style={s.pinnedHeader} onLayout={onPinnedLayout}>
+        <SafeAreaView>
+          <View style={s.headerContentPadded}>
+            <Header />
+            <View style={s.titleRow}>
+              <Text style={[typography.headingLarge, { fontSize: 28 }]}>Categories</Text>
+              <TouchableOpacity
+                style={s.addBtnHeader}
+                activeOpacity={0.7}
+                onPress={() => router.push('/create-category')}
+              >
+                <Ionicons name="add" size={24} color={C.primary} />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </SafeAreaView>
       </View>
 
-      {/* Tabs Filter */}
-      <View style={styles.tabsContainer}>
-        <View style={styles.tabsBackground}>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'expense' && styles.tabActive]}
-            onPress={() => setActiveTab('expense')}
-          >
-            <Text style={[styles.tabText, activeTab === 'expense' && styles.tabTextActive]}>Expense</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'income' && styles.tabActive]}
-            onPress={() => setActiveTab('income')}
-          >
-            <Text style={[styles.tabText, activeTab === 'income' && styles.tabTextActive]}>Income</Text>
-          </TouchableOpacity>
+      {/* 2. Scrolling Content */}
+      <ScrollView
+        style={[s.scroll, { marginTop: pinnedHeaderH }]}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={s.scrollContent}
+        stickyHeaderIndices={[0]}
+      >
+        {/* Sticky Filter Only (BELT REMOVED) */}
+        <View style={s.stickyFilterContainer}>
+          <View style={s.filterWrapper}>
+            <CategoriesTabs active={activeTab} onSelect={setActiveTab} />
+          </View>
         </View>
-      </View>
 
-      {/* Categories List */}
-      <ScrollView contentContainerStyle={styles.listContent} showsVerticalScrollIndicator={false}>
-        {filteredCategories.map((cat) => (
-          <View key={cat.id} style={styles.categoryItem}>
-            <View style={styles.iconOuter}>
-              <View style={[styles.iconInner, { backgroundColor: cat.color + '12' }]}>
-                <Ionicons name={cat.icon as any} size={18} color={cat.color} />
+        {/* Categories List Body */}
+        <View style={s.listBody}>
+          <View style={s.list}>
+            {filteredCategories.map((item, i) => (
+              <View key={item.id}>
+                <View style={s.row}>
+                  <View style={s.iconOuter}>
+                    <View style={[s.iconBox, { backgroundColor: item.color + '12', borderColor: item.color + '20' }]}>
+                      <Ionicons name={item.icon as any} size={15} color={item.color} />
+                    </View>
+                  </View>
+                  <View style={s.textSide}>
+                    <Text style={typography.txTitle} numberOfLines={1}>{item.name}</Text>
+                    <Text style={[typography.txSubtitle, { marginTop: 1 }]} numberOfLines={1}>Created: {item.createdAt}</Text>
+                  </View>
+                  <View style={s.actions}>
+                    <TouchableOpacity activeOpacity={0.7} style={s.miniBtn}>
+                      <Ionicons name="create-outline" size={16} color={C.tertiary} />
+                    </TouchableOpacity>
+                    <TouchableOpacity activeOpacity={0.7} style={s.miniBtn} onPress={() => deleteCategory(item.id)}>
+                      <Ionicons name="trash-outline" size={16} color="#FF3B30" />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+                {i < filteredCategories.length - 1 && <View style={s.separator} />}
               </View>
-            </View>
-            <View style={styles.textContainer}>
-              <Text style={styles.categoryName}>{cat.name}</Text>
-              <Text style={styles.categorySubtitle}>{cat.createdAt}</Text>
-            </View>
-            <View style={styles.actionGroup}>
-              <TouchableOpacity
-                activeOpacity={0.7}
-                style={styles.actionBtn}
-                onPress={() => {/* Navigate to edit or open modal */ }}
-              >
-                <Ionicons name="create-outline" size={18} color="#C7C7CC" />
-              </TouchableOpacity>
-              <TouchableOpacity
-                activeOpacity={0.7}
-                style={styles.actionBtn}
-                onPress={() => deleteCategory(cat.id)}
-              >
-                <Ionicons name="trash-outline" size={18} color="#FF3B30" />
-              </TouchableOpacity>
-            </View>
+            ))}
+            {filteredCategories.length === 0 && (
+              <View style={{ paddingTop: 40, alignItems: 'center' }}>
+                <Text style={{ fontFamily: 'Inter_400Regular', color: '#999', fontSize: 14 }}>No categories yet</Text>
+              </View>
+            )}
           </View>
-        ))}
+        </View>
 
-        {filteredCategories.length === 0 && (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyText}>No categories found</Text>
-          </View>
-        )}
+        <View style={{ height: 120 }} />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
+// ─── Styles ───────────────────────────────────────────────────────────────────
+const s = StyleSheet.create({
+  root: { flex: 1, backgroundColor: C.surface },
+  scroll: { flex: 1, zIndex: 10 },
+  scrollContent: { paddingBottom: 0 },
+
+  pinnedHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: C.surface,
+    zIndex: 100,
+  },
+  headerContentPadded: {
+    paddingHorizontal: 16,
+    paddingBottom: 15,
+    paddingTop: Platform.OS === 'web' ? 10 : 0,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
     marginTop: Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) + 10 : 10,
-    marginBottom: 20,
+    marginBottom: 5,
   },
-  headerTitle: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 24,
-    color: '#000',
-    letterSpacing: -0.5,
-  },
-  // Replaced by BeltButton styles
-  tabsContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 20,
-  },
-  tabsBackground: {
-    flexDirection: 'row',
-    backgroundColor: '#F2F2F7',
-    borderRadius: 14,
-    padding: 4,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: 'center',
-    borderRadius: 10,
-  },
-  tabActive: {
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  tabText: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 14,
-    color: '#8E8E93',
-  },
-  tabTextActive: {
-    color: '#000000',
-    fontFamily: 'Inter_600SemiBold',
-  },
-  listContent: {
-    paddingHorizontal: 20,
-    paddingBottom: 100,
-  },
-  categoryItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F2F2F7',
-  },
-  iconOuter: {
-    width: 48,
-    height: 48,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: '#F0F0F3',
-    padding: 2,
-    backgroundColor: '#FFFFFF',
-    marginRight: 14,
-  },
-  iconInner: {
-    flex: 1,
-    borderRadius: 15.5,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  textContainer: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  categoryName: {
-    fontFamily: 'Inter_700Bold', // Matches reference bold text
-    fontSize: 16,
-    color: '#000',
-    letterSpacing: -0.4,
-    marginBottom: 2,
-  },
-  categorySubtitle: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 13,
-    color: '#8E8E93',
-    letterSpacing: -0.1,
-  },
-  actionGroup: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  actionBtn: {
-    padding: 6,
-    borderRadius: 8,
-  },
-  emptyState: {
-    paddingTop: 40,
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 14,
-    color: '#999999',
-  },
+  logoRow: { flexDirection: 'row', alignItems: 'center', gap: 7 },
+  logoText: { fontFamily: 'Inter_700Bold', fontSize: 18, fontWeight: '700', letterSpacing: -1, fontStyle: "italic", color: '#111111' },
+  headerIconGroup: { flexDirection: 'row', gap: 8 },
+  squareBtn: { width: 36, height: 36, borderRadius: 10, backgroundColor: '#F5F5F7', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#E8E8ED' },
+
+  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  addBtnHeader: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#F5F5F7', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#E8E8ED' },
+
+  stickyFilterContainer: { backgroundColor: C.surface, zIndex: 10 },
+  filterWrapper: { paddingHorizontal: 14, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: C.separator },
+  filterRow: { gap: 8, alignItems: 'center' },
+  filterPill: { paddingHorizontal: 16, paddingVertical: 7, borderRadius: 20, backgroundColor: '#F4F4F6' },
+  filterPillActive: { backgroundColor: '#F2F2F7', borderWidth: 1, borderColor: C.dark },
+
+  listBody: { backgroundColor: C.surface, paddingHorizontal: 14, paddingBottom: 40 },
+  list: {},
+  row: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10 },
+  iconOuter: { width: 44, height: 44, borderRadius: 13, borderWidth: 1, borderColor: '#f8f8f8', padding: 1, marginRight: 12, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' },
+  iconBox: { width: 38, height: 38, borderRadius: 11, borderWidth: 1.3, borderColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center', flexShrink: 0 },
+  textSide: { flex: 1, marginRight: 8 },
+  separator: { height: StyleSheet.hairlineWidth, backgroundColor: C.separator, marginLeft: 44 + 12 },
+
+  actions: { flexDirection: 'row', gap: 6 },
+  miniBtn: { width: 32, height: 32, borderRadius: 10, backgroundColor: '#F5F5F7', justifyContent: 'center', alignItems: 'center' },
 });
