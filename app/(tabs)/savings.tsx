@@ -107,7 +107,7 @@ export default function SavingsScreen() {
         {/* Budget List Body (Categories Style) */}
         <View style={s.listBodyCompact}>
           {budgets.map((item, i) => {
-            const usagePercent = Math.min((item.spent / item.amount) * 100, 100);
+            const remainingPercent = Math.max(0, ((item.amount - item.spent) / item.amount) * 100);
             return (
               <View key={item.id}>
                 <View style={s.listRow}>
@@ -118,7 +118,7 @@ export default function SavingsScreen() {
                         style={[
                           s.vProgressFill,
                           {
-                            height: `${usagePercent}%`,
+                            height: `${remainingPercent}%`,
                             backgroundColor: item.color
                           }
                         ]}

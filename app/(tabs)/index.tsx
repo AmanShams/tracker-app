@@ -19,9 +19,10 @@ import {
 import { typography } from '@/constants/typography';
 import { BeltButton } from '../../components/belt-button';
 import { MainHeader } from '../../components/main-header';
+import { TransactionList } from '../../components/transaction-list';
 import { Budget, useBudgets } from '../../store/budgetStore';
 import { useThemeStore } from '../../store/themeStore';
-import { Transaction as TxType, useTransactions } from '../../store/transactionStore';
+import { useTransactions } from '../../store/transactionStore';
 
 const SCREEN_H = Dimensions.get('window').height;
 
@@ -161,11 +162,11 @@ function ActionBelt() {
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 export default function HomeScreen() {
+  const router = useRouter();
   const isFocused = useIsFocused();
   const { transactions } = useTransactions();
   const { budgets } = useBudgets();
   const { isDark, colors } = useThemeStore();
-  const [activeFilter, setActiveFilter] = useState('All');
   const [pinnedHeaderH, setPinnedHeaderH] = useState(180);
 
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -186,11 +187,6 @@ export default function HomeScreen() {
     const { height } = event.nativeEvent.layout;
     if (height > 0) setPinnedHeaderH(height);
   }, []);
-
-  const filteredTransactions = transactions.filter(tx => {
-    if (activeFilter === 'All') return true;
-    return tx.type.toLowerCase() === activeFilter.toLowerCase();
-  });
 
   const listTranslateY = listAnim.interpolate({
     inputRange: [0, 1],
@@ -237,9 +233,12 @@ export default function HomeScreen() {
           style={{
             zIndex: 1,
             transform: [{ translateY: statParallaxY }],
-            paddingHorizontal: 10,
-            paddingTop: 0,
-            paddingBottom: 3,
+            marginHorizontal: 10,
+            borderRadius: 24,
+            overflow: 'hidden',
+            paddingVertical: 2,
+            // paddingHorizontal: 0,
+            marginBottom: 10,
           }}
         >
           <StatCards />
@@ -256,84 +255,23 @@ export default function HomeScreen() {
             <View style={[s.txSectionHeaderSticky, { backgroundColor: colors.bg }]}>
               <View style={s.txHeaderMain}>
                 <Text style={[typography.headingLarge, { fontSize: 24, color: colors.text }]}>Transactions</Text>
-                <TouchableOpacity activeOpacity={0.7}><Text style={[typography.link, { color: colors.textSecondary }]}>View all ›</Text></TouchableOpacity>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => router.push('/history')}
+                >
+                  <Text style={[typography.link, { color: colors.textSecondary }]}>View all ›</Text>
+                </TouchableOpacity>
               </View>
-              <TransactionTabs active={activeFilter} onSelect={setActiveFilter} />
             </View>
           </View>
         </View>
 
         <Animated.View style={[s.txListBody, { backgroundColor: colors.bg, transform: [{ translateY: listTranslateY }] }]}>
-          <View style={[s.txList, { backgroundColor: colors.bg }]}>
-            {filteredTransactions.map((item, i) => (
-              <TransactionItem
-                key={item.id}
-                item={item}
-                last={i === filteredTransactions.length - 1}
-                budgetName={item.budgetId ? budgets.find(b => b.id === item.budgetId)?.name : undefined}
-              />
-            ))}
-            {filteredTransactions.length === 0 && (
-              <View style={{ paddingTop: 40, alignItems: 'center' }}>
-                <Text style={{ fontFamily: 'Inter_400Regular', color: colors.textTertiary, fontSize: 14 }}>No transactions yet</Text>
-              </View>
-            )}
-          </View>
+          <TransactionList transactions={transactions} limit={10} />
           <View style={{ height: 120, backgroundColor: colors.bg }} />
         </Animated.View>
       </Animated.ScrollView>
     </View>
-  );
-}
-
-// ─── Shared Components ─────────────────────────────────────────────────────────
-function TransactionTabs({ active, onSelect }: { active: string; onSelect: (f: string) => void }) {
-  const { colors } = useThemeStore();
-  return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.filterRow}>
-      {FILTERS.map((f) => {
-        const isActive = f === active;
-        return (
-          <TouchableOpacity key={f} onPress={() => onSelect(f)} activeOpacity={0.7} style={[s.filterPill, { backgroundColor: colors.bg, borderColor: colors.border }, isActive && { backgroundColor: colors.accent + '20', borderColor: colors.accent }]}>
-            <Text style={[isActive ? typography.filterActive : typography.filterInactive, { color: isActive ? colors.accent : colors.textSecondary }]}>{f}</Text>
-          </TouchableOpacity>
-        );
-      })}
-    </ScrollView>
-  );
-}
-
-function TransactionItem({ item, last, budgetName }: { item: TxType; last: boolean; budgetName?: string }) {
-  const isIncome = item.type === 'income';
-  const { isDark, colors } = useThemeStore();
-  return (
-    <>
-      <View style={s.txRow}>
-        <View style={[s.txIconOuter, { backgroundColor: colors.surface, borderColor: isDark ? '#1C1C1E' : '#f8f8f8' }]}>
-          <View style={[s.txIconBox, { backgroundColor: item.categoryColor + '12', borderColor: isDark ? item.categoryColor + '30' : item.categoryColor + '20' }]}>
-            <Ionicons name={item.categoryIcon as any} size={15} color={item.categoryColor} />
-          </View>
-        </View>
-        <View style={s.txText}>
-          <Text style={[typography.txTitle, { color: colors.text }]} numberOfLines={1}>{item.name}</Text>
-          <View style={s.subRow}>
-            <Text style={[typography.txSubtitle, { color: colors.textSecondary }]} numberOfLines={1}>{item.categoryName} · {item.date}</Text>
-            {budgetName && (
-              <View style={[s.budgetBadge, { backgroundColor: isDark ? '#1C1C1E' : '#F2F2F7' }]}>
-                <Ionicons name="wallet-outline" size={10} color={colors.textSecondary} />
-                <Text style={[s.budgetText, { color: colors.textSecondary }]}>{budgetName}</Text>
-              </View>
-            )}
-          </View>
-        </View>
-        <View style={s.txAmountCol}>
-          <Text style={[isIncome ? typography.amountPositive : typography.amountNegative, { color: isIncome ? colors.green : colors.red }]}>
-            {isIncome ? '+' : '−'}Rs {item.amount.toLocaleString()}
-          </Text>
-        </View>
-      </View>
-      {!last && <View style={[s.txSeparator, { backgroundColor: colors.separator }]} />}
-    </>
   );
 }
 
@@ -342,7 +280,7 @@ const s = StyleSheet.create({
   root: { flex: 1 },
   scroll: { flex: 1, zIndex: 10 },
   scrollContent: { paddingBottom: 0 },
-  pinnedHeader: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 100 },
+  pinnedHeader: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 },
   headerContentPadded: { paddingHorizontal: 16, paddingBottom: 0, paddingTop: Platform.OS === 'web' ? 10 : 0 },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
@@ -381,7 +319,7 @@ const s = StyleSheet.create({
   shadowWrapper: {
     ...Platform.select({
       ios: { shadowColor: '#000', shadowOffset: { width: 0, height: -12 }, shadowOpacity: 0.3, shadowRadius: 15 },
-      android: { elevation: 30, shadowColor: '#000' },
+      android: { elevation: 30, shadowColor: '#9d9d9dff' },
       web: { filter: 'drop-shadow(0px -15px 15px rgba(0,0,0,0.3))' }
     }),
     borderTopLeftRadius: 32, borderTopRightRadius: 32, backgroundColor: 'transparent', overflow: 'visible',

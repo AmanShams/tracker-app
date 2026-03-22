@@ -96,7 +96,7 @@ function TabItem({ isFocused, onPress, routeName }: { isFocused: boolean; onPres
     switch (name) {
       case 'index': return focused ? 'home' : 'home-outline';
       case 'categories': return focused ? 'grid' : 'grid-outline';
-      case 'activity': return focused ? 'analytics' : 'analytics-outline';
+      case 'history': return focused ? 'receipt' : 'receipt-outline';
       case 'savings': return focused ? 'leaf' : 'leaf-outline';
       case 'profile': return focused ? 'person' : 'person-outline';
       default: return 'apps-outline';
@@ -130,7 +130,7 @@ export default function TabLayout() {
     >
       <Tabs.Screen name="index" />
       <Tabs.Screen name="categories" />
-      <Tabs.Screen name="activity" />
+      <Tabs.Screen name="history" />
       <Tabs.Screen name="savings" />
       <Tabs.Screen name="profile" />
     </Tabs>
