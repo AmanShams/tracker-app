@@ -48,14 +48,15 @@ function AnimatedScale({ children, onPress, style }: { children: React.ReactNode
 // ─── Custom Tab Bar Container ──────────────────────────────────────────────────
 function CustomTabBar({ state, descriptors, navigation }: any) {
   const { colors } = useThemeStore();
+  const cornerBgColor = colors.bg;
   
   return (
     <View style={[styles.tabBarContainer, { backgroundColor: colors.navBg }]}>
       <View style={[styles.invertedCorner, { left: 0, backgroundColor: colors.navBg }]}>
-        <View style={[styles.invertedCornerInner, { borderBottomLeftRadius: 32, backgroundColor: colors.surface }]} />
+        <View style={[styles.invertedCornerInner, { borderBottomLeftRadius: 32, backgroundColor: cornerBgColor }]} />
       </View>
       <View style={[styles.invertedCorner, { right: 0, backgroundColor: colors.navBg }]}>
-        <View style={[styles.invertedCornerInner, { borderBottomRightRadius: 32, backgroundColor: colors.surface }]} />
+        <View style={[styles.invertedCornerInner, { borderBottomRightRadius: 32, backgroundColor: cornerBgColor }]} />
       </View>
 
       <View style={styles.tabBar}>

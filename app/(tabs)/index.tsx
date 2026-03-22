@@ -204,10 +204,10 @@ export default function HomeScreen() {
   });
 
   return (
-    <View style={[s.root, { backgroundColor: colors.surface }]}>
+    <View style={[s.root, { backgroundColor: colors.bg }]}>
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
 
-      <View style={[s.pinnedHeader, { backgroundColor: colors.surface }]} onLayout={onPinnedLayout}>
+      <View style={[s.pinnedHeader, { backgroundColor: colors.bg }]} onLayout={onPinnedLayout}>
         <SafeAreaView>
           <View style={s.headerContentPadded}>
             <MainHeader
@@ -253,7 +253,7 @@ export default function HomeScreen() {
           </View>
 
           <View style={{ backgroundColor: colors.beltBg }}>
-            <View style={[s.txSectionHeaderSticky, { backgroundColor: colors.surface }]}>
+            <View style={[s.txSectionHeaderSticky, { backgroundColor: colors.bg }]}>
               <View style={s.txHeaderMain}>
                 <Text style={[typography.headingLarge, { fontSize: 24, color: colors.text }]}>Transactions</Text>
                 <TouchableOpacity activeOpacity={0.7}><Text style={[typography.link, { color: colors.textSecondary }]}>View all ›</Text></TouchableOpacity>
@@ -263,8 +263,8 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        <Animated.View style={[s.txListBody, { backgroundColor: colors.surface, transform: [{ translateY: listTranslateY }] }]}>
-          <View style={[s.txList, { backgroundColor: colors.surface }]}>
+        <Animated.View style={[s.txListBody, { backgroundColor: colors.bg, transform: [{ translateY: listTranslateY }] }]}>
+          <View style={[s.txList, { backgroundColor: colors.bg }]}>
             {filteredTransactions.map((item, i) => (
               <TransactionItem
                 key={item.id}
@@ -279,9 +279,8 @@ export default function HomeScreen() {
               </View>
             )}
           </View>
+          <View style={{ height: 120, backgroundColor: colors.bg }} />
         </Animated.View>
-
-        <View style={{ height: 120 }} />
       </Animated.ScrollView>
     </View>
   );
@@ -389,7 +388,7 @@ const s = StyleSheet.create({
   },
   overlapSheet: { borderTopLeftRadius: 32, borderTopRightRadius: 32, overflow: 'hidden' },
   beltOuter: { paddingVertical: 5 },
-  beltRow: { flexDirection: 'row', alignItems: 'center', gap: 0, justifyContent: 'center' },
+  beltRow: { flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'center' },
 
   txSectionHeaderSticky: { borderTopLeftRadius: 32, borderTopRightRadius: 32, paddingHorizontal: 14, paddingTop: 16 },
   txHeaderMain: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },

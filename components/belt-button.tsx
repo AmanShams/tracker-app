@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { AnimatedScale } from './animated-scale';
+import { StyleSheet, Text, View } from 'react-native';
 import { useThemeStore } from '../store/themeStore';
+import { AnimatedScale } from './animated-scale';
 
 interface BeltButtonProps {
   label: string;
@@ -12,22 +12,22 @@ interface BeltButtonProps {
 
 export function BeltButton({ label, icon, onPress, style }: BeltButtonProps) {
   const { colors } = useThemeStore();
-  
+
   return (
-    <AnimatedScale 
+    <AnimatedScale
       style={[
-        styles.beltBtnOuter, 
-        { 
-          backgroundColor: colors.beltBg, 
-          borderColor: colors.beltBorder 
-        }, 
+        styles.beltBtnOuter,
+        {
+          backgroundColor: colors.beltBg,
+          borderColor: colors.beltBorder
+        },
         style
       ]}
       onPress={onPress}
     >
       <View style={[
-        styles.beltBtnInner, 
-        { 
+        styles.beltBtnInner,
+        {
           backgroundColor: colors.beltInnerBg,
           borderColor: colors.beltBorder
         }
@@ -49,10 +49,10 @@ export function BeltButton({ label, icon, onPress, style }: BeltButtonProps) {
 
 const styles = StyleSheet.create({
   beltBtnOuter: {
-    height: 48,
+    height: 40,
     borderRadius: 24,
-    borderWidth: 1,
-    padding: 1.5,
+    borderWidth: 0.5,
+    padding: 0.4,
     overflow: 'hidden',
   },
   beltBtnInner: {
@@ -61,14 +61,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 23,
     borderWidth: 1.2,
-    gap: 7,
-    paddingHorizontal: 20,
+    gap: 5,
+    paddingHorizontal: 12,
     height: '100%',
   },
   beltIconCircle: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',

@@ -67,19 +67,19 @@ export default function CategoriesScreen() {
   };
 
   return (
-    <View style={[s.root, { backgroundColor: colors.surface }]}>
+    <View style={[s.root, { backgroundColor: colors.bg }]}>
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
 
-      {/* 1. Header (FIXED) */}
-      <View style={[s.pinnedHeader, { backgroundColor: colors.surface }]} onLayout={onPinnedLayout}>
+      {/* 1. Sticky Pinned Header */}
+      <View style={[s.pinnedHeader, { backgroundColor: colors.bg }]} onLayout={onPinnedLayout}>
         <SafeAreaView>
           <View style={s.headerContentPadded}>
             <MainHeader actions={[{ icon: 'settings-outline' }]} />
             <View style={s.titleRow}>
               <Text style={[typography.headingLarge, { fontSize: 28, color: colors.text }]}>Categories</Text>
               <TouchableOpacity
-                style={[s.addBtnHeader, { backgroundColor: isDark ? '#1C1C1E' : '#F5F5F7', borderColor: isDark ? '#2C2C2E' : '#E8E8ED' }]}
+                // style={[s.addBtnHeader, { backgroundColor: isDark ? '#1C1C1E' : '#F5F5F7', borderColor: isDark ? '#2C2C2E' : '#E8E8ED' }]}
                 activeOpacity={0.7}
                 onPress={() => router.push('/create-category')}
               >
@@ -98,15 +98,15 @@ export default function CategoriesScreen() {
         stickyHeaderIndices={[0]}
       >
         {/* Sticky Filter Only (BELT REMOVED) */}
-        <View style={[s.stickyFilterContainer, { backgroundColor: colors.surface }]}>
+        <View style={[s.stickyFilterContainer, { backgroundColor: colors.bg }]}>
           <View style={[s.filterWrapper, { borderBottomColor: colors.separator }]}>
             <CategoriesTabs active={activeTab} onSelect={setActiveTab} />
           </View>
         </View>
 
-        {/* Categories List Body */}
-        <View style={[s.listBody, { backgroundColor: colors.surface }]}>
-          <View style={[s.list, { backgroundColor: colors.surface }]}>
+        {/* List Section */}
+        <View style={[s.listBody, { backgroundColor: colors.bg }]}>
+          <View style={[s.list, { backgroundColor: colors.bg }]}>
             {filteredCategories.map((item, i) => (
               <View key={item.id}>
                 <View style={s.row}>

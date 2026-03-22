@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter, Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
   KeyboardAvoidingView,
@@ -14,7 +14,7 @@ import {
   View
 } from 'react-native';
 import { FormHeader } from '../components/form-header';
-import { useCategories, CategoryType } from '../store/categoryStore';
+import { CategoryType, useCategories } from '../store/categoryStore';
 import { useThemeStore } from '../store/themeStore';
 
 const PRESET_COLORS = [
@@ -22,7 +22,7 @@ const PRESET_COLORS = [
 ];
 
 const PRESET_ICONS = [
-  'cash-outline', 'laptop-outline', 'fast-food-outline', 'bus-outline', 
+  'cash-outline', 'laptop-outline', 'fast-food-outline', 'bus-outline',
   'home-outline', 'cart-outline', 'heart-outline', 'gift-outline',
   'school-outline', 'medical-outline', 'fitness-outline', 'game-controller-outline'
 ];
@@ -31,7 +31,7 @@ export default function CreateCategoryScreen() {
   const router = useRouter();
   const { addCategory } = useCategories();
   const { isDark, colors } = useThemeStore();
-  
+
   const [name, setName] = useState('');
   const [type, setType] = useState<CategoryType>('expense');
   const [selectedIcon, setSelectedIcon] = useState(PRESET_ICONS[0]);
@@ -44,12 +44,13 @@ export default function CreateCategoryScreen() {
       icon: selectedIcon,
       color: selectedColor,
       type,
+      createdAt: new Date().toISOString()
     });
     router.back();
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.surface }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.bg }]}>
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
 
@@ -63,14 +64,14 @@ export default function CreateCategoryScreen() {
           <View style={styles.form}>
             {/* Type Selector */}
             <View style={[styles.typeToggleRow, { backgroundColor: isDark ? '#1C1C1E' : '#F2F2F7' }]}>
-              <TouchableOpacity 
-                style={[styles.typeBtn, type === 'expense' && { backgroundColor: isDark ? '#2C2C2E' : '#FFFFFF' }]} 
+              <TouchableOpacity
+                style={[styles.typeBtn, type === 'expense' && { backgroundColor: isDark ? '#2C2C2E' : '#FFFFFF' }]}
                 onPress={() => setType('expense')}
               >
                 <Text style={[styles.typeBtnText, { color: colors.textSecondary }, type === 'expense' && { color: colors.text, fontFamily: 'Inter_600SemiBold' }]}>Expense</Text>
               </TouchableOpacity>
-              <TouchableOpacity 
-                style={[styles.typeBtn, type === 'income' && { backgroundColor: isDark ? '#2C2C2E' : '#FFFFFF' }]} 
+              <TouchableOpacity
+                style={[styles.typeBtn, type === 'income' && { backgroundColor: isDark ? '#2C2C2E' : '#FFFFFF' }]}
                 onPress={() => setType('income')}
               >
                 <Text style={[styles.typeBtnText, { color: colors.textSecondary }, type === 'income' && { color: colors.text, fontFamily: 'Inter_600SemiBold' }]}>Income</Text>
@@ -78,23 +79,23 @@ export default function CreateCategoryScreen() {
             </View>
 
             {/* Name Input */}
-            <View style={[styles.field, { borderBottomColor: colors.separator }]}>
-              <Text style={[styles.label, { color: colors.textTertiary }]}>Category Name</Text>
+            <View style={[styles.field, { borderBottomColor: isDark ? '#3A3A3C' : '#D1D1D6' }]}>
+              <Text style={[styles.label, { color: colors.textSecondary }]}>Category Name</Text>
               <TextInput
                 style={[styles.input, { color: colors.text }]}
                 placeholder="e.g. Health"
-                placeholderTextColor={colors.textTertiary}
+                placeholderTextColor={colors.textSecondary}
                 value={name}
                 onChangeText={setName}
               />
             </View>
 
             {/* Icon Picker */}
-            <View style={[styles.field, { borderBottomColor: colors.separator }]}>
-              <Text style={[styles.label, { color: colors.textTertiary }]}>Icon</Text>
+            <View style={[styles.field, { borderBottomColor: isDark ? '#3A3A3C' : '#D1D1D6' }]}>
+              <Text style={[styles.label, { color: colors.textSecondary }]}>Icon</Text>
               <View style={styles.grid}>
                 {PRESET_ICONS.map((icon) => (
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     key={icon}
                     onPress={() => setSelectedIcon(icon)}
                     style={[
@@ -102,15 +103,15 @@ export default function CreateCategoryScreen() {
                       selectedIcon === icon && { backgroundColor: isDark ? '#1C1C1E' : '#F2F2F7' }
                     ]}
                   >
-                    <Ionicons name={icon as any} size={22} color={selectedIcon === icon ? colors.text : colors.textTertiary} />
+                    <Ionicons name={icon as any} size={22} color={selectedIcon === icon ? colors.text : colors.textSecondary} />
                   </TouchableOpacity>
                 ))}
               </View>
             </View>
 
             {/* Color Picker */}
-            <View style={[styles.field, { borderBottomColor: colors.separator }]}>
-              <Text style={[styles.label, { color: colors.textTertiary }]}>Color</Text>
+            <View style={[styles.field, { borderBottomColor: isDark ? '#3A3A3C' : '#D1D1D6' }]}>
+              <Text style={[styles.label, { color: colors.textSecondary }]}>Color</Text>
               <View style={styles.colorRow}>
                 {PRESET_COLORS.map((color) => (
                   <TouchableOpacity
@@ -119,7 +120,7 @@ export default function CreateCategoryScreen() {
                     style={[
                       styles.colorCircle,
                       { backgroundColor: color },
-                      selectedColor === color && { borderWidth: 3, borderColor: colors.surface }
+                      selectedColor === color && { borderWidth: 3, borderColor: colors.bg }
                     ]}
                   />
                 ))}
@@ -146,17 +147,17 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 24,
-    paddingTop: 10,
-    paddingBottom: 40,
+    paddingTop: 0,
+    paddingBottom: 0,
   },
   form: {
-    gap: 24,
+    gap: 6,
   },
   typeToggleRow: {
     flexDirection: 'row',
     borderRadius: 12,
-    padding: 4,
-    marginBottom: 8,
+    padding: 2,
+    marginBottom: 2,
   },
   typeBtn: {
     flex: 1,
@@ -176,7 +177,7 @@ const styles = StyleSheet.create({
   label: {
     fontFamily: 'Inter_400Regular',
     fontSize: 13,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   input: {
     fontSize: 16,
@@ -187,8 +188,8 @@ const styles = StyleSheet.create({
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
-    paddingVertical: 10,
+    gap: 4,
+    paddingVertical: 4,
   },
   iconBtn: {
     width: 44,
@@ -200,8 +201,8 @@ const styles = StyleSheet.create({
   colorRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 16,
-    paddingVertical: 12,
+    gap: 4,
+    paddingVertical: 4,
   },
   colorCircle: {
     width: 32,

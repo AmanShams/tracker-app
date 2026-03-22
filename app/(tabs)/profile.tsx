@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   LayoutChangeEvent,
   Platform,
@@ -16,8 +16,8 @@ import {
 import { typography } from '@/constants/typography';
 import { MainHeader } from '../../components/main-header';
 import { useBudgets } from '../../store/budgetStore';
-import { useTransactions } from '../../store/transactionStore';
 import { useThemeStore } from '../../store/themeStore';
+import { useTransactions } from '../../store/transactionStore';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -46,123 +46,124 @@ export default function ProfileScreen() {
   const settings: SettingItem[] = [
     { id: '1', title: 'Personal Info', icon: 'person-outline' },
     { id: '2', title: 'Security', icon: 'shield-checkmark-outline' },
-    { id: 'dark_mode', title: `Theme: ${getThemeDisplay()}`, icon: isDark ? 'moon' : 'moon-outline', isThemeRow: true },
+    // { id: 'dark_mode', title: `Theme: ${getThemeDisplay()}`, icon: isDark ? 'moon' : 'moon-outline', isToggle: true },
     { id: '3', title: 'Payment Methods', icon: 'card-outline' },
     { id: '4', title: 'Data & Privacy', icon: 'finger-print-outline' },
     { id: '5', title: 'Help & Support', icon: 'help-circle-outline' },
   ];
 
   return (
-    <View style={[s.root, { backgroundColor: colors.surface }]}>
+    <View style={[s.root, { backgroundColor: colors.bg }]}>
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
 
       {/* 1. Header (Fixed) */}
-      <View style={[s.pinnedHeader, { backgroundColor: colors.surface }]} onLayout={onPinnedLayout}>
+      <View style={[s.pinnedHeader, { backgroundColor: colors.bg }]} onLayout={onPinnedLayout}>
         <SafeAreaView>
           <View style={s.headerContentPadded}>
-            <MainHeader 
-              actions={[{ icon: 'notifications-outline' }]} 
+            <MainHeader
+              actions={[{ icon: 'notifications-outline' }]}
             />
             <View style={s.titleRow}>
-               <Text style={[typography.headingLarge, { fontSize: 28, color: colors.text }]}>Profile</Text>
-               <TouchableOpacity 
-                 style={[s.addBtnHeader, { backgroundColor: isDark ? '#1C1C1E' : '#F5F5F7', borderColor: isDark ? '#2C2C2E' : '#E8E8ED' }]} 
-                 activeOpacity={0.7}
-               >
-                 <Ionicons name="settings-outline" size={20} color={colors.text} />
-               </TouchableOpacity>
+              <Text style={[typography.headingLarge, { fontSize: 28, color: colors.text }]}>Profile</Text>
+              <TouchableOpacity
+                //  style={[s.addBtnHeader, { backgroundColor: isDark ? '#1C1C1E' : '#F5F5F7', borderColor: isDark ? '#2C2C2E' : '#E8E8ED' }]} 
+                activeOpacity={0.7}
+              >
+                <Ionicons name="settings-outline" size={20} color={colors.text} />
+              </TouchableOpacity>
             </View>
           </View>
         </SafeAreaView>
       </View>
 
       {/* 2. Scrolling Content */}
-      <ScrollView 
-        style={[s.scroll, { marginTop: pinnedHeaderH }]} 
+      <ScrollView
+        style={[s.scroll, { marginTop: pinnedHeaderH }]}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={s.scrollContent}
       >
         {/* Profile Card */}
         <View style={s.profileTopSection}>
           <View style={s.avatarRow}>
-             <View style={[s.avatarOuter, { backgroundColor: colors.surface, borderColor: isDark ? '#1C1C1E' : '#f8f8f8' }]}>
-                <View style={[s.avatarBox, { backgroundColor: colors.accent + '12' }]}>
-                   <Text style={[s.avatarInitials, { color: colors.accent }]}>AD</Text>
+            <View style={[s.avatarOuter, { backgroundColor: colors.surface, borderColor: isDark ? '#1C1C1E' : '#f8f8f8' }]}>
+              <View style={[s.avatarBox, { backgroundColor: colors.accent + '12' }]}>
+                <Text style={[s.avatarInitials, { color: colors.accent }]}>AD</Text>
+              </View>
+            </View>
+            <View style={s.nameLines}>
+              <Text style={[s.profileName, { color: colors.text }]}>Aman Dev</Text>
+              <View style={s.pillWrapper}>
+                <View style={[s.personalPill, { backgroundColor: colors.accent + '15' }]}>
+                  <Text style={[s.personalPillText, { color: colors.accent }]}>Premium Plan</Text>
                 </View>
-             </View>
-             <View style={s.nameLines}>
-                <Text style={[s.profileName, { color: colors.text }]}>Aman Dev</Text>
-                <View style={s.pillWrapper}>
-                   <View style={[s.personalPill, { backgroundColor: colors.accent + '15' }]}>
-                      <Text style={[s.personalPillText, { color: colors.accent }]}>Premium Plan</Text>
-                   </View>
-                </View>
-             </View>
+              </View>
+            </View>
           </View>
         </View>
 
         {/* Settings Menu List */}
         <View style={s.menuListContainer}>
           {settings.map((item, i) => (
-             <View key={item.id}>
-                <TouchableOpacity 
-                   activeOpacity={0.7} 
-                   style={s.menuRow}
-                   onPress={item.isToggle ? toggleTheme : undefined}
-                >
-                   <View style={s.menuIconWrapper}>
-                      <View style={[s.menuIconBox, { backgroundColor: isDark ? '#1C1C1E' : '#F5F5F7', borderColor: isDark ? '#2C2C2E' : '#E8E8ED' }]}>
-                         <Ionicons name={item.icon as any} size={16} color={colors.text} />
-                      </View>
-                   </View>
-                   <View style={s.menuTextSide}>
-                      <Text style={[s.menuTitleText, { color: colors.text }]}>{item.title}</Text>
-                   </View>
-                   {item.isThemeRow ? (
-                      <View style={{ flexDirection: 'row', gap: 6 }}>
-                         {([
-                           { m: 'light', icon: 'sunny' },
-                           { m: 'light-dark-nav', icon: 'partly-sunny' },
-                           { m: 'dark', icon: 'moon' },
-                           { m: 'dark-light-nav', icon: 'moon-outline' },
-                         ] as const).map(t => (
-                           <TouchableOpacity
-                             key={t.m}
-                             activeOpacity={0.7}
-                             onPress={() => setMode(t.m)}
-                             style={[
-                               s.themeIconBtn,
-                               { backgroundColor: isDark ? '#1C1C1E' : '#F5F5F7', borderColor: isDark ? '#2C2C2E' : '#E8E8ED' },
-                               mode === t.m && { backgroundColor: colors.accent + '20', borderColor: colors.accent }
-                             ]}
-                           >
-                             <Ionicons name={t.icon as any} size={15} color={mode === t.m ? colors.accent : colors.textTertiary} />
-                           </TouchableOpacity>
-                         ))}
-                      </View>
-                   ) : item.isToggle ? (
-                      <View style={[s.toggleTrack, { backgroundColor: isDark ? colors.accent : (isDark ? '#3A3A3C' : '#EAEAED') }, isDark && { backgroundColor: '#32D74B' }]}>
-                         <View style={[s.toggleKnob, isDark && s.toggleKnobActive]} />
-                      </View>
-                   ) : (
-                      <Ionicons name="chevron-forward" size={12} color={colors.textTertiary} />
-                   )}
-                </TouchableOpacity>
-                {i < settings.length - 1 && <View style={[s.menuSeparator, { backgroundColor: colors.separator }]} />}
-             </View>
+            <View key={item.id}>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                style={s.menuRow}
+                onPress={item.isThemeRow ? undefined : item.isToggle ? toggleTheme : undefined}
+              >
+                <View style={[s.menuIconWrapper, { borderColor: colors.border }]}>
+                  <View style={[s.menuIconBox, { backgroundColor: isDark ? '#1C1C1E' : '#F5F5F7', borderColor: isDark ? '#2C2C2E' : '#E8E8ED' }]}>
+                    <Ionicons name={item.icon as any} size={16} color={colors.text} />
+                  </View>
+                </View>
+                <View style={s.menuTextSide}>
+                  <Text style={[s.menuTitleText, { color: colors.text }]}>{item.title}</Text>
+                </View>
+                {item.isToggle ? (
+                  <View style={[s.toggleTrack, { backgroundColor: isDark ? colors.accent : (isDark ? '#3A3A3C' : '#EAEAED') }, isDark && { backgroundColor: '#32D74B' }]}>
+                    <View style={[s.toggleKnob, isDark && s.toggleKnobActive]} />
+                  </View>
+                ) : (
+                  <Ionicons name="chevron-forward" size={12} color={colors.textTertiary} />
+                )}
+              </TouchableOpacity>
+              {i < settings.length - 1 && <View style={[s.menuSeparator, { backgroundColor: colors.separator }]} />}
+            </View>
           ))}
         </View>
 
         {/* Footer Info */}
         <View style={s.footerSection}>
-           <TouchableOpacity activeOpacity={0.7} style={s.logoutBtn}>
-              <Text style={[s.logoutText, { color: colors.red }]}>Sign Out</Text>
-              <Ionicons name="log-out-outline" size={16} color={colors.red} />
-           </TouchableOpacity>
-           <Text style={[s.appInfo, { color: colors.textTertiary }]}>MANs Tracker v1.2.4 · Built with love</Text>
+          <View style={{ flexDirection: 'row', gap: 14, marginBottom: 25 }}>
+            {([
+              { m: 'light', icon: 'sunny' },
+              { m: 'light-dark-nav', icon: 'partly-sunny' },
+              { m: 'dark', icon: 'moon' },
+              { m: 'dark-light-nav', icon: 'moon-outline' },
+            ] as const).map(t => (
+              <TouchableOpacity
+                key={t.m}
+                activeOpacity={0.7}
+                onPress={() => setMode(t.m)}
+                style={[
+                  s.themeIconBtn,
+                  { width: 40, height: 40, borderRadius: 12 },
+                  { backgroundColor: isDark ? '#1C1C1E' : '#F5F5F7', borderColor: isDark ? '#2C2C2E' : '#E8E8ED' },
+                  mode === t.m && { backgroundColor: colors.accent + '20', borderColor: colors.accent }
+                ]}
+              >
+                <Ionicons name={t.icon as any} size={18} color={mode === t.m ? colors.accent : colors.textTertiary} />
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <TouchableOpacity activeOpacity={0.7} style={s.logoutBtn}>
+            <Text style={[s.logoutText, { color: colors.red }]}>Sign Out</Text>
+            <Ionicons name="log-out-outline" size={16} color={colors.red} />
+          </TouchableOpacity>
+          <Text style={[s.appInfo, { color: colors.textTertiary }]}>MANs Tracker v1.2.4 · Built with love</Text>
         </View>
-        
+
         <View style={{ height: 120 }} />
       </ScrollView>
     </View>

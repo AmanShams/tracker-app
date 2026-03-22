@@ -1,11 +1,10 @@
-import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
   Platform,
   StatusBar,
   StyleSheet,
-  TouchableOpacity,
-  View
+  View,
+  Text
 } from 'react-native';
 import { useThemeStore } from '../store/themeStore';
 
@@ -26,7 +25,7 @@ export function MainHeader({ actions = [] }: MainHeaderProps) {
       <View style={s.logoRow}>
         {/* <Text style={[s.logoText, { color: colors.text }]}>MANs Tracker</Text> */}
       </View>
-      <View style={s.headerIconGroup}>
+      {/* <View style={s.headerIconGroup}>
         {actions.map((action, i) => (
           <TouchableOpacity
             key={i}
@@ -43,7 +42,7 @@ export function MainHeader({ actions = [] }: MainHeaderProps) {
             <Ionicons name={action.icon as any} size={16} color={colors.text} />
           </TouchableOpacity>
         ))}
-      </View>
+      </View> */}
     </View>
   );
 }

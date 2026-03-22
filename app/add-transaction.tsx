@@ -27,7 +27,7 @@ export default function AddTransactionScreen() {
   const params = useLocalSearchParams<{ type?: 'income' | 'expense', category?: string, budgetId?: string }>();
   
   const { categories } = useCategories();
-  const { addTransaction } = useTransactions();
+  const { addTransaction, balance } = useTransactions();
   const { budgets, updateBudgetSpent } = useBudgets();
   const { isDark, colors } = useThemeStore();
 
@@ -41,6 +41,10 @@ export default function AddTransactionScreen() {
   const [notes, setNotes] = useState('');
   const [date, setDate] = useState(() => new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }));
   const [time, setTime] = useState(() => new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase());
+
+  const numAmount = parseFloat(amount || '0');
+  const isSpent = (params.type === 'expense') || (selectedCategory?.type === 'expense');
+  const isOverBalance = isSpent && !isNaN(numAmount) && amount !== '' && numAmount > balance;
 
   // 1. Initial State from Params (ReadOnly Logic)
   const isReadOnlyMode = !!params.budgetId;
@@ -109,7 +113,7 @@ export default function AddTransactionScreen() {
   const title = isReadOnlyMode ? 'Record Spending' : (params.type === 'income' ? 'Add Income' : 'Add Expense');
 
   return (
-    <SafeAreaView style={[s.safeArea, { backgroundColor: colors.surface }]}>
+    <SafeAreaView style={[s.safeArea, { backgroundColor: colors.bg }]}>
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
       <FormHeader title={title} />
@@ -117,34 +121,40 @@ export default function AddTransactionScreen() {
       <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         
         {/* Name */}
-        <View style={[s.field, { borderBottomColor: colors.separator }]}>
-          <Text style={[s.label, { color: colors.textTertiary }]}>Name</Text>
+        <View style={[s.field, { borderBottomColor: isDark ? '#3A3A3C' : '#D1D1D6' }]}>
+          <Text style={[s.label, { color: colors.textSecondary }]}>Name</Text>
           <TextInput 
             style={[s.input, { color: colors.text }]} 
             value={name} 
             onChangeText={setName} 
             placeholder="Spending details" 
-            placeholderTextColor={colors.textTertiary} 
+            placeholderTextColor={colors.textSecondary} 
           />
         </View>
 
         {/* Amount */}
-        <View style={[s.field, { borderBottomColor: colors.separator }]}>
-          <Text style={[s.label, { color: colors.textTertiary }]}>Amount</Text>
+          <View style={[s.field, { borderBottomColor: isDark ? '#3A3A3C' : '#D1D1D6' }]}>
+            <Text style={[s.label, { color: colors.textSecondary }]}>Amount</Text>
           <TextInput 
             style={[s.amountInput, { color: colors.text }]} 
             value={amount} 
             onChangeText={setAmount} 
             placeholder="Rs 0.00" 
-            placeholderTextColor={colors.textTertiary} 
+            placeholderTextColor={colors.textSecondary} 
             keyboardType="numeric" 
             autoFocus={isReadOnlyMode} 
           />
+          {isOverBalance && (
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+              <Ionicons name="warning-outline" size={14} color={colors.red} style={{ marginRight: 4 }} />
+              <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 12, color: colors.red }}>Exceeds total balance (Rs {balance.toLocaleString()})</Text>
+            </View>
+          )}
         </View>
 
         {/* Category Selection */}
-        <View style={[s.field, { borderBottomColor: colors.separator }]}>
-          <Text style={[s.label, { color: colors.textTertiary }]}>Category {isReadOnlyMode && ' (Fixed)'}</Text>
+        <View style={[s.field, { borderBottomColor: isDark ? '#3A3A3C' : '#D1D1D6' }]}>
+          <Text style={[s.label, { color: colors.textSecondary }]}>Category {isReadOnlyMode && ' (Fixed)'}</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.categoryScroll}>
             {filteredCategories.map((cat) => {
               const isActive = selectedCategory?.id === cat.id;
@@ -188,7 +198,7 @@ export default function AddTransactionScreen() {
 
              {isBudgetLinked && availableBudgets.length > 0 && (
                <View style={[s.budgetPicker, { borderTopColor: colors.separator }]}>
-                  <Text style={[s.miniLabel, { color: colors.textTertiary }]}>Linked Budget {isReadOnlyMode && ' (Locked)'}</Text>
+                  <Text style={[s.miniLabel, { color: colors.textSecondary }]}>Linked Budget {isReadOnlyMode && ' (Locked)'}</Text>
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.budgetChips}>
                      {availableBudgets.map(b => {
                        const isActive = selectedBudgetId === b.id;
@@ -215,25 +225,25 @@ export default function AddTransactionScreen() {
 
         {/* Date & Time Row */}
         <View style={s.row}>
-          <View style={[s.field, { flex: 1, marginRight: SPACE.sm, borderBottomColor: colors.separator }]}>
-            <Text style={[s.label, { color: colors.textTertiary }]}>Date</Text>
-            <TextInput style={[s.input, { color: colors.text }]} value={date} onChangeText={setDate} placeholderTextColor={colors.textTertiary} />
+          <View style={[s.field, { flex: 1, marginRight: SPACE.sm, borderBottomColor: isDark ? '#3A3A3C' : '#D1D1D6' }]}>
+            <Text style={[s.label, { color: colors.textSecondary }]}>Date</Text>
+            <TextInput style={[s.input, { color: colors.text }]} value={date} onChangeText={setDate} placeholderTextColor={colors.textSecondary} />
           </View>
-          <View style={[s.field, { flex: 1, marginLeft: SPACE.sm, borderBottomColor: colors.separator }]}>
-            <Text style={[s.label, { color: colors.textTertiary }]}>Time</Text>
-            <TextInput style={[s.input, { color: colors.text }]} value={time} onChangeText={setTime} placeholderTextColor={colors.textTertiary} />
+          <View style={[s.field, { flex: 1, marginLeft: SPACE.sm, borderBottomColor: isDark ? '#3A3A3C' : '#D1D1D6' }]}>
+            <Text style={[s.label, { color: colors.textSecondary }]}>Time</Text>
+            <TextInput style={[s.input, { color: colors.text }]} value={time} onChangeText={setTime} placeholderTextColor={colors.textSecondary} />
           </View>
         </View>
 
         {/* Notes */}
-        <View style={[s.field, { borderBottomColor: colors.separator }]}>
-          <Text style={[s.label, { color: colors.textTertiary }]}>Other Notes</Text>
+        <View style={[s.field, { borderBottomColor: isDark ? '#3A3A3C' : '#D1D1D6' }]}>
+          <Text style={[s.label, { color: colors.textSecondary }]}>Other Notes</Text>
           <TextInput 
             style={[s.textArea, { color: colors.text }]} 
             value={notes} 
             onChangeText={setNotes} 
             placeholder="Additional details..." 
-            placeholderTextColor={colors.textTertiary} 
+            placeholderTextColor={colors.textSecondary} 
             multiline 
           />
         </View>
@@ -242,7 +252,16 @@ export default function AddTransactionScreen() {
 
       {/* Save Button */}
       <View style={s.bottomContainer}>
-        <TouchableOpacity activeOpacity={0.8} style={[s.saveBtn, { backgroundColor: colors.primary }, (!name || !amount || !selectedCategory) && { opacity: 0.5 }]} onPress={handleSave} disabled={!name || !amount || !selectedCategory}>
+        <TouchableOpacity 
+          activeOpacity={0.8} 
+          style={[
+            s.saveBtn, 
+            { backgroundColor: colors.primary }, 
+            (!name || !amount || !selectedCategory || isOverBalance) && { opacity: 0.5 }
+          ]} 
+          onPress={handleSave} 
+          disabled={!name || !amount || !selectedCategory || isOverBalance}
+        >
           <Text style={[s.saveBtnText, { color: isDark ? '#000' : '#FFF' }]}>Save Transaction</Text>
         </TouchableOpacity>
       </View>
@@ -252,30 +271,30 @@ export default function AddTransactionScreen() {
 
 const s = StyleSheet.create({
   safeArea: { flex: 1 },
-  scrollContent: { paddingHorizontal: 20, paddingBottom: 120 },
-  field: { marginBottom: 15, borderBottomWidth: 1.2, paddingBottom: 6 },
-  label: { fontFamily: 'Inter_500Medium', fontSize: 13, marginBottom: 6 },
-  input: { fontFamily: 'Inter_600SemiBold', fontSize: 16, paddingVertical: 10, letterSpacing: -0.2 },
-  amountInput: { fontFamily: 'Inter_700Bold', fontSize: 32, paddingVertical: 14, letterSpacing: -1 },
+  scrollContent: { paddingHorizontal: 24, paddingBottom: 120, paddingTop: 0 },
+  field: { marginBottom: 8, borderBottomWidth: 1.2, paddingBottom: 4 },
+  label: { fontFamily: 'Inter_500Medium', fontSize: 13, marginBottom: 4 },
+  input: { fontFamily: 'Inter_600SemiBold', fontSize: 16, paddingVertical: 8, letterSpacing: -0.2 },
+  amountInput: { fontFamily: 'Inter_700Bold', fontSize: 32, paddingVertical: 10, letterSpacing: -1 },
   textArea: { fontFamily: 'Inter_400Regular', fontSize: 15, minHeight: 60, paddingVertical: 8 },
   
-  categoryScroll: { paddingVertical: 8, gap: 10 },
-  catChip: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 12, borderWidth: 1, borderColor: 'transparent' },
+  categoryScroll: { paddingVertical: 4, gap: 6 },
+  catChip: { flexDirection: 'row', alignItems: 'center', paddingVertical: 6, paddingHorizontal: 10, borderRadius: 12, borderWidth: 1, borderColor: 'transparent' },
   readOnlyChip: { opacity: 0.9 },
   catIcon: { width: 22, height: 22, borderRadius: 7, justifyContent: 'center', alignItems: 'center', marginRight: 8 },
   catText: { fontFamily: 'Inter_400Regular', fontSize: 14 },
 
-  linkSection: { borderRadius: 20, padding: 18, marginVertical: 10, borderWidth: 1 },
+  linkSection: { borderRadius: 16, padding: 12, marginVertical: 6, borderWidth: 1 },
   readOnlySection: { opacity: 1 },
   linkHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   linkTextCol: { flex: 1, paddingRight: 10 },
   linkTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 15 },
   linkSubtitle: { fontFamily: 'Inter_400Regular', fontSize: 12, marginTop: 2 },
   
-  budgetPicker: { marginTop: 15, borderTopWidth: 1, paddingTop: 15 },
-  miniLabel: { fontFamily: 'Inter_500Medium', fontSize: 11, textTransform: 'uppercase', marginBottom: 10 },
-  budgetChips: { gap: 8 },
-  budgetChip: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10, borderWidth: 1 },
+  budgetPicker: { marginTop: 10, borderTopWidth: 1, paddingTop: 10 },
+  miniLabel: { fontFamily: 'Inter_500Medium', fontSize: 11, textTransform: 'uppercase', marginBottom: 6 },
+  budgetChips: { gap: 6 },
+  budgetChip: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, borderWidth: 1 },
   budIcon: { width: 18, height: 18, borderRadius: 5, justifyContent: 'center', alignItems: 'center', marginRight: 6 },
   budChipText: { fontFamily: 'Inter_500Medium', fontSize: 13 },
   

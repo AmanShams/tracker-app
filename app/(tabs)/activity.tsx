@@ -32,12 +32,12 @@ export default function ActivityScreen() {
   }, []);
 
   return (
-    <View style={[s.root, { backgroundColor: colors.surface }]}>
+    <View style={[s.root, { backgroundColor: colors.bg }]}>
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
 
       {/* 1. Header (FIXED) */}
-      <View style={[s.pinnedHeader, { backgroundColor: colors.surface }]} onLayout={onPinnedLayout}>
+      <View style={[s.pinnedHeader, { backgroundColor: colors.bg }]} onLayout={onPinnedLayout}>
         <SafeAreaView>
           <View style={s.headerContentPadded}>
             <MainHeader actions={[{ icon: 'calendar-outline' }]} />
@@ -54,7 +54,7 @@ export default function ActivityScreen() {
         stickyHeaderIndices={[0]}
       >
         {/* Sticky Filter Only (BELT REMOVED) */}
-        <View style={[s.stickyFilterContainer, { backgroundColor: colors.surface }]}>
+        <View style={[s.stickyFilterContainer, { backgroundColor: colors.bg }]}>
           <View style={[s.filterWrapper, { borderBottomColor: colors.separator }]}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.filterRow}>
               {['Week', 'Month', 'Year'].map(r => (
@@ -70,7 +70,7 @@ export default function ActivityScreen() {
           </View>
         </View>
 
-        <View style={[s.listBody, { backgroundColor: colors.surface }]}>
+        <View style={[s.listBody, { backgroundColor: colors.bg }]}>
           <View style={[s.placeholderCard, { backgroundColor: isDark ? '#1C1C1E' : '#F9F9FB', borderColor: isDark ? '#2C2C2E' : '#EDEEF2' }]}>
             <Ionicons name="stats-chart" size={40} color={colors.textTertiary} />
             <Text style={[s.placeholderText, { color: colors.textSecondary }]}>Detailed insights coming soon</Text>

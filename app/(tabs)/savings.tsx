@@ -17,8 +17,8 @@ import { typography } from '@/constants/typography';
 import { ConfirmModal } from '../../components/confirm-modal';
 import { MainHeader } from '../../components/main-header';
 import { useBudgets } from '../../store/budgetStore';
-import { useTransactions } from '../../store/transactionStore';
 import { useThemeStore } from '../../store/themeStore';
+import { useTransactions } from '../../store/transactionStore';
 
 export default function SavingsScreen() {
   const router = useRouter();
@@ -54,21 +54,21 @@ export default function SavingsScreen() {
   };
 
   return (
-    <View style={[s.root, { backgroundColor: colors.surface }]}>
+    <View style={[s.root, { backgroundColor: colors.bg }]}>
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
 
       {/* 1. Header (FIXED) */}
-      <View style={[s.pinnedHeader, { backgroundColor: colors.surface }]} onLayout={onPinnedLayout}>
+      <View style={[s.pinnedHeader, { backgroundColor: colors.bg }]} onLayout={onPinnedLayout}>
         <SafeAreaView>
           <View style={s.headerContentPadded}>
-            <MainHeader 
-              actions={[{ icon: 'settings-outline' }]} 
+            <MainHeader
+              actions={[{ icon: 'settings-outline' }]}
             />
             <View style={s.titleRow}>
               <Text style={[typography.headingLarge, { fontSize: 28, color: colors.text }]}>Budgets</Text>
               <TouchableOpacity
-                style={[s.addBtnHeader, { backgroundColor: isDark ? '#1C1C1E' : '#F5F5F7', borderColor: isDark ? '#2C2C2E' : '#E8E8ED' }]}
+                // style={[s.addBtnHeader, { backgroundColor: isDark ? '#1C1C1E' : '#F5F5F7', borderColor: isDark ? '#2C2C2E' : '#E8E8ED' }]}
                 activeOpacity={0.7}
                 onPress={() => router.push('/set-budget')}
               >
@@ -114,14 +114,14 @@ export default function SavingsScreen() {
                   {/* Vertical Progress indicator */}
                   <View style={s.vProgressContainer}>
                     <View style={[s.vProgressTrack, { backgroundColor: isDark ? '#1C1C1E' : '#F2F2F7' }]}>
-                      <View 
+                      <View
                         style={[
-                          s.vProgressFill, 
-                          { 
-                            height: `${usagePercent}%`, 
-                            backgroundColor: item.color 
+                          s.vProgressFill,
+                          {
+                            height: `${usagePercent}%`,
+                            backgroundColor: item.color
                           }
-                        ]} 
+                        ]}
                       />
                     </View>
                   </View>
