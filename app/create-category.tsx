@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Stack, useRouter } from 'expo-router';
+import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
 import {
   KeyboardAvoidingView,
@@ -24,12 +24,17 @@ const PRESET_COLORS = [
 const PRESET_ICONS = [
   'cash-outline', 'laptop-outline', 'fast-food-outline', 'bus-outline',
   'home-outline', 'cart-outline', 'heart-outline', 'gift-outline',
-  'school-outline', 'medical-outline', 'fitness-outline', 'game-controller-outline'
+  'school-outline', 'medical-outline', 'fitness-outline', 'game-controller-outline',
+  'car-outline', 'wifi-outline', 'barbell-outline', 'receipt-outline',
+  'pizza-outline', 'shirt-outline', 'film-outline', 'airplane-outline',
+  'color-palette-outline', 'hammer-outline', 'construct-outline', 'cafe-outline',
+  'briefcase-outline', 'card-outline', 'diamond-outline', 'flash-outline'
 ];
 
 export default function CreateCategoryScreen() {
   const router = useRouter();
-  const { addCategory } = useCategories();
+  const { editId } = useLocalSearchParams<{ editId?: string }>();
+  const { addCategory, updateCategory, categories } = useCategories();
   const { isDark, colors } = useThemeStore();
 
   const [name, setName] = useState('');
@@ -37,24 +42,50 @@ export default function CreateCategoryScreen() {
   const [selectedIcon, setSelectedIcon] = useState(PRESET_ICONS[0]);
   const [selectedColor, setSelectedColor] = useState(PRESET_COLORS[0]);
 
+  React.useEffect(() => {
+    if (editId) {
+      const cat = categories.find(c => c.id === editId);
+      if (cat) {
+        setName(cat.name);
+        setType(cat.type);
+        setSelectedIcon(cat.icon);
+        setSelectedColor(cat.color);
+      }
+    }
+  }, [editId, categories]);
+
   const handleSave = () => {
     if (!name) return;
-    addCategory({
-      name,
-      icon: selectedIcon,
-      color: selectedColor,
-      type,
-      createdAt: new Date().toISOString()
-    });
+    if (editId) {
+      updateCategory({
+        id: editId,
+        name,
+        icon: selectedIcon,
+        color: selectedColor,
+        type,
+        createdAt: new Date().toISOString()
+      });
+    } else {
+      addCategory({
+        name,
+        icon: selectedIcon,
+        color: selectedColor,
+        type,
+        createdAt: new Date().toISOString()
+      });
+    }
     router.back();
   };
+
+  const title = editId ? 'Edit Category' : 'Create Category';
+  const btnLabel = editId ? 'Update Category' : 'Create Category';
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.bg }]}>
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
 
-      <FormHeader title="Create Category" />
+      <FormHeader title={title} />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -132,7 +163,7 @@ export default function CreateCategoryScreen() {
               activeOpacity={0.8}
               onPress={handleSave}
             >
-              <Text style={[styles.saveBtnText, { color: isDark ? '#000' : '#FFF' }]}>Create Category</Text>
+              <Text style={[styles.saveBtnText, { color: isDark ? '#000' : '#FFF' }]}>{btnLabel}</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

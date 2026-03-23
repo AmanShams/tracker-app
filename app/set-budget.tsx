@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Stack, useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
+import React, { useState, useEffect } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -22,7 +22,8 @@ import { useThemeStore } from '../store/themeStore';
 
 export default function SetBudgetScreen() {
   const router = useRouter();
-  const { addBudget } = useBudgets();
+  const { editId } = useLocalSearchParams<{ editId?: string }>();
+  const { addBudget, updateBudget, budgets } = useBudgets();
   const { categories } = useCategories();
   const { balance } = useTransactions();
   const { isDark, colors } = useThemeStore();
@@ -32,41 +33,70 @@ export default function SetBudgetScreen() {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
 
   const numAmount = parseFloat(amount || '0');
-  const isOverBalance = !isNaN(numAmount) && amount !== '' && numAmount > balance;
+  const isOverBalance = !isNaN(numAmount) && amount !== '' && numAmount > (editId ? 999999 : balance);
 
   const expenseCategories = categories.filter(c => c.type === 'expense');
 
+  useEffect(() => {
+    if (editId) {
+      const budget = budgets.find(b => b.id === editId);
+      if (budget) {
+        setName(budget.name);
+        setAmount(budget.amount.toString());
+        const cat = categories.find(c => c.name === budget.linkedCategoryName);
+        if (cat) setSelectedCategory(cat);
+      }
+    }
+  }, [editId, budgets, categories]);
+
   const handleSave = () => {
     if (!name || !amount || !selectedCategory) return;
-    const numAmount = parseFloat(amount);
+    const numAmountValue = parseFloat(amount);
     
-    // Check if balance is sufficient
-    if (balance < numAmount) {
-      Alert.alert(
-        "Insufficient Balance", 
-        `Your total balance (Rs ${balance.toLocaleString()}) is less than the requested budget amount.`,
-        [{ text: "OK" }]
-      );
-      return;
-    }
+    if (editId) {
+      const oldB = budgets.find(b => b.id === editId);
+      updateBudget({
+        id: editId,
+        spent: oldB?.spent || 0,
+        name: name || selectedCategory.name,
+        amount: numAmountValue,
+        icon: selectedCategory.icon,
+        color: selectedCategory.color,
+        bgColor: selectedCategory.color + '15',
+        linkedCategoryName: selectedCategory.name
+      });
+    } else {
+      // Check if balance is sufficient
+      if (balance < numAmountValue) {
+        Alert.alert(
+          "Insufficient Balance", 
+          `Your total balance (Rs ${balance.toLocaleString()}) is less than the requested budget amount.`,
+          [{ text: "OK" }]
+        );
+        return;
+      }
 
-    addBudget({
-      name: name || selectedCategory.name,
-      amount: numAmount,
-      icon: selectedCategory.icon,
-      color: selectedCategory.color,
-      bgColor: selectedCategory.color + '15',
-      linkedCategoryName: selectedCategory.name
-    });
+      addBudget({
+        name: name || selectedCategory.name,
+        amount: numAmountValue,
+        icon: selectedCategory.icon,
+        color: selectedCategory.color,
+        bgColor: selectedCategory.color + '15',
+        linkedCategoryName: selectedCategory.name
+      });
+    }
     router.back();
   };
+
+  const title = editId ? 'Edit Budget' : 'Create Budget';
+  const btnLabel = editId ? 'Update Budget' : 'Activate Budget';
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.bg }]}>
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
 
-      <FormHeader title="Create Budget" />
+      <FormHeader title={title} />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -141,7 +171,7 @@ export default function SetBudgetScreen() {
               onPress={handleSave}
               disabled={!name || !amount || !selectedCategory || isOverBalance}
             >
-              <Text style={[styles.saveBtnText, { color: isDark ? '#000' : '#FFF' }]}>Activate Budget</Text>
+              <Text style={[styles.saveBtnText, { color: isDark ? '#000' : '#FFF' }]}>{btnLabel}</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

@@ -14,6 +14,7 @@ export interface Budget {
 interface BudgetContextType {
   budgets: Budget[];
   addBudget: (budget: Omit<Budget, 'id' | 'spent'>) => void;
+  updateBudget: (budget: Budget) => void;
   updateBudgetSpent: (id: string, amount: number) => void;
   deleteBudget: (id: string) => void;
 }
@@ -24,23 +25,43 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
   const [budgets, setBudgets] = useState<Budget[]>([
     {
       id: '1',
-      name: 'Groceries Pot',
-      amount: 5000,
-      spent: 1200,
-      icon: 'cart-outline',
-      color: '#0EA5E9',
-      bgColor: '#E8F5FA',
-      linkedCategoryName: 'Food',
+      name: 'Internet Bill',
+      amount: 1500,
+      spent: 0,
+      icon: 'wifi-outline',
+      color: '#3B82F6',
+      bgColor: '#EBF3FF',
+      linkedCategoryName: 'Bills',
     },
     {
       id: '2',
-      name: 'Fuel Budget',
-      amount: 3000,
-      spent: 800,
-      icon: 'car-outline',
-      color: '#F59E0B',
-      bgColor: '#FFF4E5',
-      linkedCategoryName: 'Transport',
+      name: 'Gym',
+      amount: 2500,
+      spent: 0,
+      icon: 'barbell-outline',
+      color: '#10B981',
+      bgColor: '#ECFDF5',
+      linkedCategoryName: 'Health',
+    },
+    {
+      id: '3',
+      name: 'Charity',
+      amount: 500,
+      spent: 0,
+      icon: 'heart-outline',
+      color: '#EF4444',
+      bgColor: '#FEE2E2',
+      linkedCategoryName: 'Charity',
+    },
+    {
+      id: '4',
+      name: 'Hygiene',
+      amount: 1000,
+      spent: 0,
+      icon: 'water-outline',
+      color: '#EC4899',
+      bgColor: '#FDF2F8',
+      linkedCategoryName: 'Health',
     }
   ]);
 
@@ -53,6 +74,10 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
     setBudgets(prev => [budget, ...prev]);
   };
 
+  const updateBudget = (updatedBudget: Budget) => {
+    setBudgets(prev => prev.map(b => b.id === updatedBudget.id ? updatedBudget : b));
+  };
+
   const updateBudgetSpent = (id: string, amount: number) => {
     setBudgets(prev => prev.map(b => b.id === id ? { ...b, spent: b.spent + amount } : b));
   };
@@ -62,7 +87,7 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <BudgetContext.Provider value={{ budgets, addBudget, updateBudgetSpent, deleteBudget }}>
+    <BudgetContext.Provider value={{ budgets, addBudget, updateBudget, updateBudgetSpent, deleteBudget }}>
       {children}
     </BudgetContext.Provider>
   );

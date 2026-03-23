@@ -20,13 +20,15 @@ interface TransactionContextType {
   transactions: Transaction[];
   balance: number;
   addTransaction: (tx: Omit<Transaction, 'id'>) => void;
+  updateTransaction: (tx: Transaction) => void;
+  deleteTransaction: (id: string) => void;
 }
 
 const TransactionContext = createContext<TransactionContextType | undefined>(undefined);
 
 export function TransactionProvider({ children }: { children: React.ReactNode }) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [balance, setBalance] = useState(150000); // Initial Balance for testing
+  const [balance, setBalance] = useState(0); // Initial balance is now 0 as requested
 
   const addTransaction = (newTx: Omit<Transaction, 'id'>) => {
     const tx: Transaction = {
@@ -44,8 +46,39 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
     }
   };
 
+  const updateTransaction = (updatedTx: Transaction) => {
+    setTransactions(prev => {
+      const oldTx = prev.find(t => t.id === updatedTx.id);
+      if (!oldTx) return prev;
+      
+      // Update balance
+      setBalance(b => {
+        let newBalance = b;
+        // Undo old
+        if (oldTx.type === 'income') newBalance -= oldTx.amount;
+        else newBalance += oldTx.amount;
+        // Apply new
+        if (updatedTx.type === 'income') newBalance += updatedTx.amount;
+        else newBalance -= updatedTx.amount;
+        return newBalance;
+      });
+      
+      return prev.map(t => t.id === updatedTx.id ? updatedTx : t);
+    });
+  };
+
+  const deleteTransaction = (id: string) => {
+    setTransactions(prev => {
+      const oldTx = prev.find(t => t.id === id);
+      if (oldTx) {
+        setBalance(b => oldTx.type === 'income' ? b - oldTx.amount : b + oldTx.amount);
+      }
+      return prev.filter(t => t.id !== id);
+    });
+  };
+
   return (
-    <TransactionContext.Provider value={{ transactions, balance, addTransaction }}>
+    <TransactionContext.Provider value={{ transactions, balance, addTransaction, updateTransaction, deleteTransaction }}>
       {children}
     </TransactionContext.Provider>
   );

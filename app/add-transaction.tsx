@@ -24,10 +24,15 @@ const SPACE = { xs: 4, sm: 8, md: 12, lg: 16, xl: 20, xxl: 24 };
 
 export default function AddTransactionScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ type?: 'income' | 'expense', category?: string, budgetId?: string }>();
+  const params = useLocalSearchParams<{ 
+    type?: 'income' | 'expense', 
+    category?: string, 
+    budgetId?: string,
+    editId?: string 
+  }>();
   
   const { categories } = useCategories();
-  const { addTransaction, balance } = useTransactions();
+  const { addTransaction, updateTransaction, transactions, balance } = useTransactions();
   const { budgets, updateBudgetSpent } = useBudgets();
   const { isDark, colors } = useThemeStore();
 
@@ -44,13 +49,29 @@ export default function AddTransactionScreen() {
 
   const numAmount = parseFloat(amount || '0');
   const isSpent = (params.type === 'expense') || (selectedCategory?.type === 'expense');
-  const isOverBalance = isSpent && !isNaN(numAmount) && amount !== '' && numAmount > balance;
+  const isOverBalance = isSpent && !isNaN(numAmount) && amount !== '' && numAmount > (params.editId ? 999999 : balance); // Allow edit if existing
 
-  // 1. Initial State from Params (ReadOnly Logic)
+  // 1. Initial State from Params (ReadOnly or Edit Logic)
   const isReadOnlyMode = !!params.budgetId;
+  const isEditMode = !!params.editId;
 
   useEffect(() => {
-    if (params.budgetId) {
+    if (params.editId) {
+      const tx = transactions.find(t => t.id === params.editId);
+      if (tx) {
+        setName(tx.name);
+        setAmount(tx.amount.toString());
+        setNotes(tx.notes || '');
+        setDate(tx.date);
+        setTime(tx.time);
+        const cat = categories.find(c => c.name === tx.categoryName);
+        if (cat) setSelectedCategory(cat);
+        if (tx.budgetId) {
+          setIsBudgetLinked(true);
+          setSelectedBudgetId(tx.budgetId);
+        }
+      }
+    } else if (params.budgetId) {
        const budget = budgets.find(b => b.id === params.budgetId);
        if (budget) {
          setIsBudgetLinked(true);
@@ -62,22 +83,22 @@ export default function AddTransactionScreen() {
        const cat = categories.find(c => c.name === params.category);
        if (cat) setSelectedCategory(cat);
     }
-  }, [params.budgetId, params.category, categories, budgets]);
+  }, [params.editId, params.budgetId, params.category, categories, budgets, transactions]);
 
   // 2. Filter Category & Budgets
   const filteredCategories = useMemo(() => {
-    if (!params.type && !isReadOnlyMode) return categories;
+    if (!params.type && !isReadOnlyMode && !isEditMode) return categories;
     if (isReadOnlyMode && selectedCategory) return [selectedCategory];
-    const type = params.type || 'expense';
+    const type = params.type || selectedCategory?.type || 'expense';
     return categories.filter(cat => cat.type === type);
-  }, [categories, params.type, isReadOnlyMode, selectedCategory]);
+  }, [categories, params.type, isReadOnlyMode, isEditMode, selectedCategory]);
 
   const availableBudgets = useMemo(() => {
     if (!selectedCategory) return [];
     return budgets.filter(b => b.linkedCategoryName === selectedCategory.name);
   }, [selectedCategory, budgets]);
 
-  const isSpentForm = (params.type === 'expense' || isReadOnlyMode) || (selectedCategory?.type === 'expense');
+  const isSpentForm = (params.type === 'expense' || isReadOnlyMode || isEditMode) || (selectedCategory?.type === 'expense');
   const showLinkSection = isSpentForm && selectedCategory && availableBudgets.length > 0;
 
   // 3. Auto-select budget logic
@@ -89,28 +110,55 @@ export default function AddTransactionScreen() {
 
   const handleSave = () => {
     if (!name || !amount || !selectedCategory) return;
-    const numAmount = parseFloat(amount);
+    const numAmountValue = parseFloat(amount);
     
-    addTransaction({
-      name,
-      categoryName: selectedCategory.name,
-      categoryIcon: selectedCategory.icon,
-      categoryColor: selectedCategory.color,
-      amount: numAmount,
-      type: selectedCategory.type,
-      date,
-      time,
-      notes,
-      budgetId: isBudgetLinked ? selectedBudgetId || undefined : undefined,
-    });
+    if (isEditMode && params.editId) {
+      const oldTx = transactions.find(t => t.id === params.editId);
+      
+      updateTransaction({
+        id: params.editId,
+        name,
+        categoryName: selectedCategory.name,
+        categoryIcon: selectedCategory.icon,
+        categoryColor: selectedCategory.color,
+        amount: numAmountValue,
+        type: selectedCategory.type,
+        date,
+        time,
+        notes,
+        budgetId: isBudgetLinked ? selectedBudgetId || undefined : undefined,
+      });
 
-    if (isBudgetLinked && selectedBudgetId) {
-      updateBudgetSpent(selectedBudgetId, numAmount);
+      // Update budget spent if needed
+      if (oldTx?.budgetId) {
+        updateBudgetSpent(oldTx.budgetId, -oldTx.amount);
+      }
+      if (isBudgetLinked && selectedBudgetId) {
+        updateBudgetSpent(selectedBudgetId, numAmountValue);
+      }
+    } else {
+      addTransaction({
+        name,
+        categoryName: selectedCategory.name,
+        categoryIcon: selectedCategory.icon,
+        categoryColor: selectedCategory.color,
+        amount: numAmountValue,
+        type: selectedCategory.type,
+        date,
+        time,
+        notes,
+        budgetId: isBudgetLinked ? selectedBudgetId || undefined : undefined,
+      });
+
+      if (isBudgetLinked && selectedBudgetId) {
+        updateBudgetSpent(selectedBudgetId, numAmountValue);
+      }
     }
     router.back();
   };
 
-  const title = isReadOnlyMode ? 'Record Spending' : (params.type === 'income' ? 'Add Income' : 'Add Expense');
+  let title = isEditMode ? 'Edit Transaction' : (params.type === 'income' ? 'Add Income' : 'Add Expense');
+  if (isReadOnlyMode) title = 'Record Spending';
 
   return (
     <SafeAreaView style={[s.safeArea, { backgroundColor: colors.bg }]}>

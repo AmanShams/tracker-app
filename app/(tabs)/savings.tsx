@@ -140,6 +140,16 @@ export default function SavingsScreen() {
                   </View>
 
                   <View style={s.actionRowCompact}>
+                    <TouchableOpacity 
+                      activeOpacity={0.7} 
+                      style={s.actionBtnCompact}
+                      onPress={() => router.push({
+                        pathname: '/set-budget',
+                        params: { editId: item.id }
+                      })}
+                    >
+                      <Ionicons name="pencil-outline" size={16} color={colors.textTertiary} />
+                    </TouchableOpacity>
                     <TouchableOpacity activeOpacity={0.7} style={s.actionBtnCompact} onPress={() => handleDeleteTrigger(item.id, item.name)}>
                       <Ionicons name="trash-outline" size={16} color={colors.red} />
                     </TouchableOpacity>

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { typography } from '../constants/typography';
-import { useThemeStore } from '../store/themeStore';
-import { useTransactions, Transaction } from '../store/transactionStore';
 import { useBudgets } from '../store/budgetStore';
+import { useThemeStore } from '../store/themeStore';
+import { Transaction } from '../store/transactionStore';
 import { TransactionItem } from './transaction-item';
 
 const FILTERS = ['All', 'Expense', 'Income'];
@@ -25,6 +25,23 @@ export function TransactionList({ transactions, showFilter = true, limit }: Tran
   });
 
   const displayList = limit ? filtered.slice(0, limit) : filtered;
+
+  // Group by date
+  const grouped: { [key: string]: Transaction[] } = {};
+  displayList.forEach(tx => {
+    if (!grouped[tx.date]) grouped[tx.date] = [];
+    grouped[tx.date].push(tx);
+  });
+
+  const sortedDates = Object.keys(grouped).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+
+  const getRelativeDate = (dateStr: string) => {
+    const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const yesterday = new Date(Date.now() - 86400000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    if (dateStr === today) return 'Today';
+    if (dateStr === yesterday) return 'Yesterday';
+    return dateStr;
+  };
 
   return (
     <View style={s.container}>
@@ -51,13 +68,21 @@ export function TransactionList({ transactions, showFilter = true, limit }: Tran
       )}
 
       <View style={s.list}>
-        {displayList.map((item, i) => (
-          <TransactionItem
-            key={item.id}
-            item={item}
-            last={i === displayList.length - 1}
-            budgetName={item.budgetId ? budgets.find(b => b.id === item.budgetId)?.name : undefined}
-          />
+        {sortedDates.map((date) => (
+          <View key={date} style={s.dateGroup}>
+            <View style={s.dateHeader}>
+              <Text style={[s.dateHeaderText, { color: colors.textSecondary }]}>{getRelativeDate(date)}</Text>
+              <View style={[s.headerLine, { backgroundColor: colors.separator }]} />
+            </View>
+            {grouped[date].map((item, i) => (
+              <TransactionItem
+                key={item.id}
+                item={item}
+                last={i === grouped[date].length - 1}
+                budgetName={item.budgetId ? budgets.find(b => b.id === item.budgetId)?.name : undefined}
+              />
+            ))}
+          </View>
         ))}
 
         {displayList.length === 0 && (
@@ -75,4 +100,21 @@ const s = StyleSheet.create({
   filterRow: { gap: 8, marginBottom: 16, alignItems: 'center', paddingHorizontal: 0 },
   filterPill: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 20, borderWidth: 1 },
   list: {},
+  dateGroup: { marginBottom: 0 },
+  dateHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    marginTop: 8,
+  },
+  headerLine: {
+    flex: 1,
+    height: StyleSheet.hairlineWidth,
+    marginLeft: 12,
+  },
+  dateHeaderText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 13,
+    letterSpacing: -0.3,
+  },
 });

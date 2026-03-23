@@ -120,7 +120,14 @@ export default function CategoriesScreen() {
                     <Text style={[typography.txSubtitle, { marginTop: 1, color: colors.textSecondary }]} numberOfLines={1}>Created: {item.createdAt}</Text>
                   </View>
                   <View style={s.actions}>
-                    <TouchableOpacity activeOpacity={0.7} style={s.miniBtn}>
+                    <TouchableOpacity 
+                      activeOpacity={0.7} 
+                      style={s.miniBtn}
+                      onPress={() => router.push({
+                        pathname: '/create-category',
+                        params: { editId: item.id }
+                      })}
+                    >
                       <Ionicons name="pencil-outline" size={16} color={colors.textTertiary} />
                     </TouchableOpacity>
                     <TouchableOpacity activeOpacity={0.7} style={s.miniBtn} onPress={() => handleDeleteTrigger(item.id, item.name)}>
@@ -141,8 +148,13 @@ export default function CategoriesScreen() {
 
         <ConfirmModal
           visible={!!deleteId}
-          onClose={() => setDeleteId(null)}
-          onConfirm={() => deleteId && deleteCategory(deleteId)}
+          onClose={() => { setDeleteId(null); setDeleteName(""); }}
+          onConfirm={() => {
+            if (deleteId) {
+              deleteCategory(deleteId);
+              setDeleteId(null);
+            }
+          }}
           title="Delete Category"
           message={`Delete "${deleteName}"? This action cannot be undone.`}
         />

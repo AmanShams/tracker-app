@@ -34,6 +34,7 @@ const FILTERS = ['All', 'Expense', 'Income'];
 function BalanceCard() {
   const { balance } = useTransactions();
   const { colors } = useThemeStore();
+  
   const balanceStr = balance.toFixed(2);
   const [intPartRaw, decPart] = balanceStr.split('.');
   const intPart = intPartRaw.replace(/\B(?=(\d{3})+(?!\d))/g, " ");

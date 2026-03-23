@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { typography } from '../constants/typography';
 import { useThemeStore } from '../store/themeStore';
@@ -14,9 +15,16 @@ interface TransactionItemProps {
 export function TransactionItem({ item, last, budgetName }: TransactionItemProps) {
   const isIncome = item.type === 'income';
   const { isDark, colors } = useThemeStore();
+  const router = useRouter();
   
   return (
-    <>
+    <TouchableOpacity 
+      activeOpacity={0.7} 
+      onPress={() => router.push({
+        pathname: '/add-transaction',
+        params: { editId: item.id }
+      })}
+    >
       <View style={s.txRow}>
         <View style={[s.txIconOuter, { backgroundColor: colors.surface, borderColor: isDark ? '#1C1C1E' : '#f8f8f8' }]}>
           <View style={[s.txIconBox, { backgroundColor: item.categoryColor + '12', borderColor: isDark ? item.categoryColor + '30' : item.categoryColor + '20' }]}>
@@ -26,7 +34,7 @@ export function TransactionItem({ item, last, budgetName }: TransactionItemProps
         <View style={s.txText}>
           <Text style={[typography.txTitle, { color: colors.text }]} numberOfLines={1}>{item.name}</Text>
           <View style={s.subRow}>
-            <Text style={[typography.txSubtitle, { color: colors.textSecondary }]} numberOfLines={1}>{item.categoryName} · {item.date}</Text>
+            <Text style={[typography.txSubtitle, { color: colors.textSecondary }]} numberOfLines={1}>{item.categoryName} · {item.time}</Text>
             {budgetName && (
               <View style={[s.budgetBadge, { backgroundColor: isDark ? '#1C1C1E' : '#F2F2F7' }]}>
                 <Ionicons name="wallet-outline" size={10} color={colors.textSecondary} />
@@ -42,7 +50,7 @@ export function TransactionItem({ item, last, budgetName }: TransactionItemProps
         </View>
       </View>
       {!last && <View style={[s.txSeparator, { backgroundColor: colors.separator }]} />}
-    </>
+    </TouchableOpacity>
   );
 }
 
