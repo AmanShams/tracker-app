@@ -10,6 +10,16 @@
                 "buildType": "apk"
             }
         },
+        "preview-lite": {
+            "distribution": "internal",
+            "android": {
+                "buildType": "apk",
+                "gradleCommand": ":app:assembleRelease",
+                "env": {
+                   "REACT_NATIVE_PACKAGER_HOSTNAME": "localhost"
+                }
+            }
+        },
         "production": {}
     }
 }
