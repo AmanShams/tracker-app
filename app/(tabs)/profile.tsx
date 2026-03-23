@@ -18,6 +18,11 @@ import { MainHeader } from '../../components/main-header';
 import { useBudgets } from '../../store/budgetStore';
 import { useThemeStore } from '../../store/themeStore';
 import { useTransactions } from '../../store/transactionStore';
+import { scheduleExpenseNotification } from '../../notifications/scheduleExpenseNotification';
+import { Modal, TextInput, Alert, AlertStatic } from 'react-native';
+import Constants from 'expo-constants';
+
+const NativeAlert = Platform.OS === 'web' ? { alert: (t: string, m: string) => alert(`${t}: ${m}`) } as any : Alert;
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -25,6 +30,8 @@ export default function ProfileScreen() {
   const { budgets } = useBudgets();
   const { isDark, mode, setMode, toggleTheme, colors } = useThemeStore();
   const [pinnedHeaderH, setPinnedHeaderH] = useState(130);
+  const [isTimeModalVisible, setTimeModalVisible] = useState(false);
+  const [remindTime, setRemindTime] = useState({ hour: '20', minute: '00' });
 
   const onPinnedLayout = useCallback((event: LayoutChangeEvent) => {
     const { height } = event.nativeEvent.layout;
@@ -47,10 +54,28 @@ export default function ProfileScreen() {
     { id: '1', title: 'Personal Info', icon: 'person-outline' },
     { id: '2', title: 'Security', icon: 'shield-checkmark-outline' },
     // { id: 'dark_mode', title: `Theme: ${getThemeDisplay()}`, icon: isDark ? 'moon' : 'moon-outline', isToggle: true },
+    { id: 'reminders', title: 'Daily Reminder', icon: 'notifications-outline' },
     { id: '3', title: 'Payment Methods', icon: 'card-outline' },
     { id: '4', title: 'Data & Privacy', icon: 'finger-print-outline' },
     { id: '5', title: 'Help & Support', icon: 'help-circle-outline' },
   ];
+
+  const handleSetTime = async () => {
+    const h = parseInt(remindTime.hour);
+    const m = parseInt(remindTime.minute);
+    
+    if (isNaN(h) || isNaN(m) || h < 0 || h > 23 || m < 0 || m > 59) {
+      NativeAlert.alert('Invalid Time', 'Please enter a valid hour (0-23) and minute (0-59).');
+      return;
+    }
+
+    const isExpoGo = Constants.appOwnership === 'expo';
+    if (Platform.OS !== 'web' && !isExpoGo) {
+      await scheduleExpenseNotification({ hour: h, minute: m });
+    }
+    setTimeModalVisible(false);
+    NativeAlert.alert('Success', `Daily reminder set for ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`);
+  };
 
   return (
     <View style={[s.root, { backgroundColor: colors.bg }]}>
@@ -109,7 +134,10 @@ export default function ProfileScreen() {
               <TouchableOpacity
                 activeOpacity={0.7}
                 style={s.menuRow}
-                onPress={item.isThemeRow ? undefined : item.isToggle ? toggleTheme : undefined}
+                onPress={() => {
+                  if (item.id === 'reminders') setTimeModalVisible(true);
+                  else if (item.isToggle) toggleTheme();
+                }}
               >
                 <View style={[s.menuIconWrapper, { borderColor: colors.border }]}>
                   <View style={[s.menuIconBox, { backgroundColor: isDark ? '#1C1C1E' : '#F5F5F7', borderColor: isDark ? '#2C2C2E' : '#E8E8ED' }]}>
@@ -163,6 +191,54 @@ export default function ProfileScreen() {
           </TouchableOpacity>
           <Text style={[s.appInfo, { color: colors.textTertiary }]}>MANs Tracker v1.2.4 · Built with love</Text>
         </View>
+
+        {/* Time Picker Modal */}
+        <Modal visible={isTimeModalVisible} transparent animationType="fade">
+          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' }}>
+            <View style={{ backgroundColor: colors.surface, width: '80%', borderRadius: 24, padding: 24, borderWidth: 1, borderColor: colors.border }}>
+              <Text style={[typography.headingMedium, { color: colors.text, marginBottom: 20 }]}>Set Reminder Time</Text>
+              
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 25 }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: colors.textSecondary, marginBottom: 8, fontSize: 12 }}>Hour (0-23)</Text>
+                  <TextInput
+                    style={{ backgroundColor: colors.bg, color: colors.text, padding: 15, borderRadius: 12, fontSize: 18, textAlign: 'center' }}
+                    value={remindTime.hour}
+                    onChangeText={(t) => setRemindTime(prev => ({ ...prev, hour: t }))}
+                    keyboardType="numeric"
+                    maxLength={2}
+                  />
+                </View>
+                <Text style={{ fontSize: 24, color: colors.text, marginHorizontal: 15, marginTop: 20 }}>:</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: colors.textSecondary, marginBottom: 8, fontSize: 12 }}>Minute (0-59)</Text>
+                  <TextInput
+                    style={{ backgroundColor: colors.bg, color: colors.text, padding: 15, borderRadius: 12, fontSize: 18, textAlign: 'center' }}
+                    value={remindTime.minute}
+                    onChangeText={(t) => setRemindTime(prev => ({ ...prev, minute: t }))}
+                    keyboardType="numeric"
+                    maxLength={2}
+                  />
+                </View>
+              </View>
+
+              <View style={{ flexDirection: 'row', gap: 12 }}>
+                <TouchableOpacity 
+                   onPress={() => setTimeModalVisible(false)}
+                   style={{ flex: 1, padding: 16, borderRadius: 14, backgroundColor: isDark ? '#1C1C1E' : '#F5F5F7', alignItems: 'center' }}
+                >
+                  <Text style={{ color: colors.textSecondary }}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                   onPress={handleSetTime}
+                   style={{ flex: 1, padding: 16, borderRadius: 14, backgroundColor: colors.accent, alignItems: 'center' }}
+                >
+                  <Text style={{ color: '#FFF', fontWeight: 'bold' }}>Save</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
 
         <View style={{ height: 120 }} />
       </ScrollView>

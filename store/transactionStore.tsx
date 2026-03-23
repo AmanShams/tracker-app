@@ -1,4 +1,7 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const STORAGE_KEY = 'transactions_data';
 
 export type TransactionType = 'income' | 'expense';
 
@@ -28,7 +31,33 @@ const TransactionContext = createContext<TransactionContextType | undefined>(und
 
 export function TransactionProvider({ children }: { children: React.ReactNode }) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [balance, setBalance] = useState(0); // Initial balance is now 0 as requested
+  const [balance, setBalance] = useState(0);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Load from AsyncStorage
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const storedTransactions = await AsyncStorage.getItem(STORAGE_KEY);
+        const storedBalance = await AsyncStorage.getItem('balance_data');
+        if (storedTransactions) setTransactions(JSON.parse(storedTransactions));
+        if (storedBalance) setBalance(Number(storedBalance));
+      } catch (e) {
+        console.error('Failed to load transactions', e);
+      } finally {
+        setIsLoaded(true);
+      }
+    };
+    loadData();
+  }, []);
+
+  // Save to AsyncStorage
+  useEffect(() => {
+    if (isLoaded) {
+      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
+      AsyncStorage.setItem('balance_data', balance.toString());
+    }
+  }, [transactions, balance, isLoaded]);
 
   const addTransaction = (newTx: Omit<Transaction, 'id'>) => {
     const tx: Transaction = {

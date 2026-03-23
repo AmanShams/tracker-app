@@ -24,6 +24,10 @@ import { Budget, useBudgets } from '../../store/budgetStore';
 import { useThemeStore } from '../../store/themeStore';
 import { useTransactions } from '../../store/transactionStore';
 
+import { parseExpenseInput } from '../../utils/parseExpenseInput';
+import { saveExpense, getCategoryDetails } from '../../storage/saveExpense';
+import { TextInput } from 'react-native';
+
 const SCREEN_H = Dimensions.get('window').height;
 
 // ─── Design Tokens ────────────────────────────────────────────────────────────
@@ -196,13 +200,17 @@ function ActionBelt() {
 }
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
+import Constants from 'expo-constants';
+
 export default function HomeScreen() {
   const router = useRouter();
   const isFocused = useIsFocused();
-  const { transactions } = useTransactions();
+  const { transactions, balance, addTransaction } = useTransactions();
   const { budgets } = useBudgets();
   const { isDark, colors } = useThemeStore();
   const [pinnedHeaderH, setPinnedHeaderH] = useState(180);
+
+  const isTestMode = Platform.OS === 'web' || Constants.appOwnership === 'expo';
 
   const scrollY = useRef(new Animated.Value(0)).current;
   useEffect(() => {
@@ -268,6 +276,39 @@ export default function HomeScreen() {
         >
           <StatCards />
         </Animated.View>
+
+        {isTestMode && (
+          <View style={{ marginHorizontal: 16, marginBottom: 20, backgroundColor: colors.surface, padding: 16, borderRadius: 20, borderWidth: 1, borderColor: colors.border }}>
+            <Text style={[typography.headingMedium, { color: colors.text, marginBottom: 10, fontSize: 16 }]}>Quick Log (Test Mode)</Text>
+            <TextInput
+              placeholder="e.g. Ali 500 food lunch"
+              placeholderTextColor={colors.textTertiary}
+              style={{ backgroundColor: colors.bg, color: colors.text, padding: 12, borderRadius: 12, borderWidth: 1, borderColor: colors.border }}
+              onSubmitEditing={async (e) => {
+                const text = e.nativeEvent.text;
+                const parsed = parseExpenseInput(text);
+                if (parsed) {
+                  const catDetails = getCategoryDetails(parsed.category);
+                  await addTransaction({
+                    name: parsed.name,
+                    amount: parsed.amount,
+                    categoryName: catDetails.name,
+                    categoryIcon: catDetails.icon,
+                    categoryColor: catDetails.color,
+                    type: 'expense',
+                    date: parsed.date,
+                    time: parsed.time,
+                    notes: parsed.notes,
+                  });
+                  alert(`Saved: ${parsed.name} - ${parsed.amount}`);
+                } else {
+                  alert('Invalid input. Format: name amount category notes');
+                }
+              }}
+            />
+            <Text style={{ color: colors.textSecondary, fontSize: 11, marginTop: 8 }}>Type and press Enter to simulate notification reply.</Text>
+          </View>
+        )}
 
         <View style={s.stickyBumper}>
           <View style={s.shadowWrapper}>

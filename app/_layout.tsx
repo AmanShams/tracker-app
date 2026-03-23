@@ -10,7 +10,8 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useMemo } from 'react';
-import { View } from 'react-native';
+import { View, Platform } from 'react-native';
+import Constants from 'expo-constants';
 import 'react-native-reanimated';
 import { BudgetProvider } from '../store/budgetStore';
 import { CategoryProvider } from '../store/categoryStore';
@@ -18,6 +19,9 @@ import { TransactionProvider } from '../store/transactionStore';
 import { SavingsProvider } from '../store/savingsStore';
 import { useThemeStore } from '../store/themeStore';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+// import { scheduleExpenseNotification } from '../notifications/scheduleExpenseNotification';
+// import notifee from '@notifee/react-native';
+// import { handleExpenseReply } from '../notifications/notificationReplyHandler';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -54,6 +58,27 @@ export default function RootLayout() {
   useEffect(() => {
     if (fontsLoaded) {
       SplashScreen.hideAsync();
+      
+      // Schedule daily reminder for 8:00 PM (Native only, non-Expo Go)
+      const isNative = Platform.OS !== 'web';
+      const isExpoGo = Constants.appOwnership === 'expo';
+      
+      if (isNative && !isExpoGo) {
+        try {
+          const { scheduleExpenseNotification } = require('../notifications/scheduleExpenseNotification');
+          const notifee = require('@notifee/react-native').default;
+          const { handleExpenseReply } = require('../notifications/notificationReplyHandler');
+
+          scheduleExpenseNotification({ hour: 20, minute: 0 });
+          // Handle foreground events
+          const unsubscribe = notifee.onForegroundEvent(async (event: any) => {
+            await handleExpenseReply(event);
+          });
+          return () => unsubscribe();
+        } catch (e) {
+          console.warn('Notifee foreground events skipped.');
+        }
+      }
     }
   }, [fontsLoaded]);
 
