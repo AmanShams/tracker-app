@@ -19,12 +19,52 @@ import { MainHeader } from '../../components/main-header';
 import { useBudgets } from '../../store/budgetStore';
 import { useThemeStore } from '../../store/themeStore';
 import { useTransactions } from '../../store/transactionStore';
+import { Animated } from 'react-native';
+import { useIsFocused } from '@react-navigation/native';
+import { useEffect, useRef } from 'react';
+
+const AnimatedListItem = ({ children, index, isFocused }: { children: React.ReactNode, index: number, isFocused: boolean }) => {
+  const anim = useRef(new Animated.Value(0)).current;
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    if (isFocused) {
+      setIsReady(true);
+      anim.setValue(0);
+      Animated.timing(anim, {
+        toValue: 1,
+        duration: 400,
+        delay: index * 100,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      setIsReady(false);
+    }
+  }, [index, isFocused]);
+
+  const translateY = anim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [60, 0],
+  });
+
+  const opacity = anim.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [0, 0, 1],
+  });
+
+  return (
+    <Animated.View style={{ opacity: isReady ? opacity : 0, transform: [{ translateY }] }}>
+      {children}
+    </Animated.View>
+  );
+};
 
 export default function SavingsScreen() {
   const router = useRouter();
   const { budgets, deleteBudget } = useBudgets();
   const { transactions } = useTransactions();
   const { isDark, colors } = useThemeStore();
+  const isFocused = useIsFocused();
   const [pinnedHeaderH, setPinnedHeaderH] = useState(130);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteName, setDeleteName] = useState("");
@@ -109,54 +149,56 @@ export default function SavingsScreen() {
           {budgets.map((item, i) => {
             const remainingPercent = Math.max(0, ((item.amount - item.spent) / item.amount) * 100);
             return (
-              <View key={item.id}>
-                <View style={s.listRow}>
-                  {/* Vertical Progress indicator */}
-                  <View style={s.vProgressContainer}>
-                    <View style={[s.vProgressTrack, { backgroundColor: isDark ? '#1C1C1E' : '#F2F2F7' }]}>
-                      <View
-                        style={[
-                          s.vProgressFill,
-                          {
-                            height: `${remainingPercent}%`,
-                            backgroundColor: item.color
-                          }
-                        ]}
-                      />
+              <AnimatedListItem key={item.id} index={i} isFocused={isFocused}>
+                <View>
+                  <View style={s.listRow}>
+                    {/* Vertical Progress indicator */}
+                    <View style={s.vProgressContainer}>
+                      <View style={[s.vProgressTrack, { backgroundColor: isDark ? '#1C1C1E' : '#F2F2F7' }]}>
+                        <View
+                          style={[
+                            s.vProgressFill,
+                            {
+                              height: `${remainingPercent}%`,
+                              backgroundColor: item.color
+                            }
+                          ]}
+                        />
+                      </View>
+                    </View>
+
+                    <View style={[s.iconWrapperCompact, { backgroundColor: colors.surface, borderColor: isDark ? '#1C1C1E' : '#f8f8f8' }]}>
+                      <View style={[s.iconBoxCompact, { backgroundColor: item.color + '12', borderColor: isDark ? item.color + '40' : item.color + '20' }]}>
+                        <Ionicons name={item.icon as any} size={15} color={item.color} />
+                      </View>
+                    </View>
+
+                    <View style={s.textColContainer}>
+                      <Text style={[typography.txTitle, { color: colors.text }]} numberOfLines={1}>{item.name}</Text>
+                      <Text style={[typography.txSubtitle, { marginTop: 1, color: colors.textSecondary }]} numberOfLines={1}>
+                        Spent Rs {item.spent.toLocaleString()} of {item.amount.toLocaleString()}
+                      </Text>
+                    </View>
+
+                    <View style={s.actionRowCompact}>
+                      <TouchableOpacity 
+                        activeOpacity={0.7} 
+                        style={s.actionBtnCompact}
+                        onPress={() => router.push({
+                          pathname: '/set-budget',
+                          params: { editId: item.id }
+                        })}
+                      >
+                        <Ionicons name="pencil-outline" size={16} color={colors.textTertiary} />
+                      </TouchableOpacity>
+                      <TouchableOpacity activeOpacity={0.7} style={s.actionBtnCompact} onPress={() => handleDeleteTrigger(item.id, item.name)}>
+                        <Ionicons name="trash-outline" size={16} color={colors.red} />
+                      </TouchableOpacity>
                     </View>
                   </View>
-
-                  <View style={[s.iconWrapperCompact, { backgroundColor: colors.surface, borderColor: isDark ? '#1C1C1E' : '#f8f8f8' }]}>
-                    <View style={[s.iconBoxCompact, { backgroundColor: item.color + '12', borderColor: isDark ? item.color + '40' : item.color + '20' }]}>
-                      <Ionicons name={item.icon as any} size={15} color={item.color} />
-                    </View>
-                  </View>
-
-                  <View style={s.textColContainer}>
-                    <Text style={[typography.txTitle, { color: colors.text }]} numberOfLines={1}>{item.name}</Text>
-                    <Text style={[typography.txSubtitle, { marginTop: 1, color: colors.textSecondary }]} numberOfLines={1}>
-                      Spent Rs {item.spent.toLocaleString()} of {item.amount.toLocaleString()}
-                    </Text>
-                  </View>
-
-                  <View style={s.actionRowCompact}>
-                    <TouchableOpacity 
-                      activeOpacity={0.7} 
-                      style={s.actionBtnCompact}
-                      onPress={() => router.push({
-                        pathname: '/set-budget',
-                        params: { editId: item.id }
-                      })}
-                    >
-                      <Ionicons name="pencil-outline" size={16} color={colors.textTertiary} />
-                    </TouchableOpacity>
-                    <TouchableOpacity activeOpacity={0.7} style={s.actionBtnCompact} onPress={() => handleDeleteTrigger(item.id, item.name)}>
-                      <Ionicons name="trash-outline" size={16} color={colors.red} />
-                    </TouchableOpacity>
-                  </View>
+                  {i < budgets.length - 1 && <View style={[s.separatorAligned, { backgroundColor: colors.separator }]} />}
                 </View>
-                {i < budgets.length - 1 && <View style={[s.separatorAligned, { backgroundColor: colors.separator }]} />}
-              </View>
+              </AnimatedListItem>
             );
           })}
 

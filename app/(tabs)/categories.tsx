@@ -18,6 +18,45 @@ import { ConfirmModal } from '../../components/confirm-modal';
 import { MainHeader } from '../../components/main-header';
 import { CategoryType, useCategories } from '../../store/categoryStore';
 import { useThemeStore } from '../../store/themeStore';
+import { Animated } from 'react-native';
+import { useIsFocused } from '@react-navigation/native';
+import { useEffect, useRef } from 'react';
+
+const AnimatedListItem = ({ children, index, isFocused }: { children: React.ReactNode, index: number, isFocused: boolean }) => {
+  const anim = useRef(new Animated.Value(0)).current;
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    if (isFocused) {
+      setIsReady(true);
+      anim.setValue(0);
+      Animated.timing(anim, {
+        toValue: 1,
+        duration: 400,
+        delay: index * 100,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      setIsReady(false);
+    }
+  }, [index, isFocused]);
+
+  const translateY = anim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [60, 0],
+  });
+
+  const opacity = anim.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [0, 0, 1],
+  });
+
+  return (
+    <Animated.View style={{ opacity: isReady ? opacity : 0, transform: [{ translateY }] }}>
+      {children}
+    </Animated.View>
+  );
+};
 
 // ─── Shared Components ─────────────────────────────────────────────────────────
 function CategoriesTabs({ active, onSelect }: { active: CategoryType; onSelect: (f: CategoryType) => void }) {
@@ -48,6 +87,7 @@ export default function CategoriesScreen() {
   const { categories, deleteCategory } = useCategories();
   const { isDark, colors } = useThemeStore();
   const [activeTab, setActiveTab] = useState<CategoryType>('expense');
+  const isFocused = useIsFocused(); // Added isFocused track
   const [pinnedHeaderH, setPinnedHeaderH] = useState(130);
 
   // New state for custom modal
@@ -108,35 +148,37 @@ export default function CategoriesScreen() {
         <View style={[s.listBody, { backgroundColor: colors.bg }]}>
           <View style={[s.list, { backgroundColor: colors.bg }]}>
             {filteredCategories.map((item, i) => (
-              <View key={item.id}>
-                <View style={s.row}>
-                  <View style={[s.iconOuter, { backgroundColor: colors.surface, borderColor: isDark ? '#1C1C1E' : '#f8f8f8' }]}>
-                    <View style={[s.iconBox, { backgroundColor: item.color + '12', borderColor: isDark ? item.color + '40' : item.color + '20' }]}>
-                      <Ionicons name={item.icon as any} size={15} color={item.color} />
+              <AnimatedListItem key={item.id} index={i} isFocused={isFocused}>
+                <View>
+                  <View style={s.row}>
+                    <View style={[s.iconOuter, { backgroundColor: colors.surface, borderColor: isDark ? '#1C1C1E' : '#f8f8f8' }]}>
+                      <View style={[s.iconBox, { backgroundColor: item.color + '12', borderColor: isDark ? item.color + '40' : item.color + '20' }]}>
+                        <Ionicons name={item.icon as any} size={15} color={item.color} />
+                      </View>
+                    </View>
+                    <View style={s.textSide}>
+                      <Text style={[typography.txTitle, { color: colors.text }]} numberOfLines={1}>{item.name}</Text>
+                      <Text style={[typography.txSubtitle, { marginTop: 1, color: colors.textSecondary }]} numberOfLines={1}>Created: {item.createdAt}</Text>
+                    </View>
+                    <View style={s.actions}>
+                      <TouchableOpacity 
+                        activeOpacity={0.7} 
+                        style={s.miniBtn}
+                        onPress={() => router.push({
+                          pathname: '/create-category',
+                          params: { editId: item.id }
+                        })}
+                      >
+                        <Ionicons name="pencil-outline" size={16} color={colors.textTertiary} />
+                      </TouchableOpacity>
+                      <TouchableOpacity activeOpacity={0.7} style={s.miniBtn} onPress={() => handleDeleteTrigger(item.id, item.name)}>
+                        <Ionicons name="trash-outline" size={16} color={colors.red} />
+                      </TouchableOpacity>
                     </View>
                   </View>
-                  <View style={s.textSide}>
-                    <Text style={[typography.txTitle, { color: colors.text }]} numberOfLines={1}>{item.name}</Text>
-                    <Text style={[typography.txSubtitle, { marginTop: 1, color: colors.textSecondary }]} numberOfLines={1}>Created: {item.createdAt}</Text>
-                  </View>
-                  <View style={s.actions}>
-                    <TouchableOpacity 
-                      activeOpacity={0.7} 
-                      style={s.miniBtn}
-                      onPress={() => router.push({
-                        pathname: '/create-category',
-                        params: { editId: item.id }
-                      })}
-                    >
-                      <Ionicons name="pencil-outline" size={16} color={colors.textTertiary} />
-                    </TouchableOpacity>
-                    <TouchableOpacity activeOpacity={0.7} style={s.miniBtn} onPress={() => handleDeleteTrigger(item.id, item.name)}>
-                      <Ionicons name="trash-outline" size={16} color={colors.red} />
-                    </TouchableOpacity>
-                  </View>
+                  {i < filteredCategories.length - 1 && <View style={[s.separator, { backgroundColor: colors.separator }]} />}
                 </View>
-                {i < filteredCategories.length - 1 && <View style={[s.separator, { backgroundColor: colors.separator }]} />}
-              </View>
+              </AnimatedListItem>
             ))}
             {filteredCategories.length === 0 && (
               <View style={{ paddingTop: 40, alignItems: 'center' }}>

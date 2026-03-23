@@ -62,6 +62,25 @@ function StatCards() {
   const { budgets } = useBudgets();
   const { isDark, colors } = useThemeStore();
   const router = useRouter();
+  const isFocused = useIsFocused(); // Track focus
+
+  const anim = useRef(new Animated.Value(0)).current;
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    if (isFocused) {
+      setIsReady(true);
+      anim.setValue(0);
+      Animated.spring(anim, {
+        toValue: 1,
+        useNativeDriver: true,
+        tension: 50,
+        friction: 8,
+      }).start();
+    } else {
+      setIsReady(false);
+    }
+  }, [budgets.length, isFocused]); // Re-trigger on focus
 
   return (
     <View style={s.statCardsContainer}>
@@ -85,44 +104,59 @@ function StatCards() {
             </View>
           </TouchableOpacity>
         ) : (
-          budgets.map((budget: Budget) => {
+          budgets.map((budget: Budget, index: number) => {
             const remaining = Math.max(0, budget.amount - budget.spent);
             const progress = Math.min((remaining / budget.amount) * 100, 100);
+            
+            const cardAnim = anim.interpolate({
+              inputRange: [0, 1],
+              outputRange: [100 + (index * 40), 0]
+            });
+
+            const opacity = anim.interpolate({
+              inputRange: [0, 0.5, 1],
+              outputRange: [0, 0, 1]
+            });
+
             return (
-              <TouchableOpacity
+              <Animated.View 
                 key={budget.id}
-                style={[s.statCard, { backgroundColor: colors.surface, borderColor: isDark ? '#2C2C2E' : '#f2f2f2' }]}
-                activeOpacity={0.8}
-                onPress={() => router.push({
-                  pathname: '/add-transaction',
-                  params: { budgetId: budget.id }
-                })}
+                style={{ transform: [{ translateX: cardAnim }], opacity: isReady ? opacity : 0 }}
               >
-                <View style={[s.statCardInner, { backgroundColor: colors.surface, borderColor: isDark ? '#1C1C1E' : '#eaeaeb' }]}>
-                  <View style={s.statCardTop}>
-                    <View style={[s.statIconBox, { backgroundColor: budget.color + '12' }]}>
-                      <Ionicons name={budget.icon as any} size={14} color={budget.color} />
-                    </View>
-                    <Ionicons name="chevron-forward" size={10} color={colors.textTertiary} />
-                  </View>
-
-                  <View style={s.statContent}>
-                    <Text style={[s.statCardTitle, { color: colors.text }]} numberOfLines={1}>{budget.name}</Text>
-                    <Text style={[s.statCardSubtitle, { color: colors.textSecondary }]} numberOfLines={1}>{budget.linkedCategoryName}</Text>
-                  </View>
-
-                  <View style={s.statProgressSection}>
-                    <View style={[s.progressTrack, { backgroundColor: isDark ? '#1C1C1E' : '#F2F2F7' }]}>
-                      <View style={[s.progressFill, { width: `${progress}%`, backgroundColor: budget.color }]} />
+                <TouchableOpacity
+                  style={[s.statCard, { backgroundColor: colors.surface, borderColor: isDark ? '#2C2C2E' : '#f2f2f2' }]}
+                  activeOpacity={0.8}
+                  onPress={() => router.push({
+                    pathname: '/add-transaction',
+                    params: { budgetId: budget.id }
+                  })}
+                >
+                  <View style={[s.statCardInner, { backgroundColor: colors.surface, borderColor: isDark ? '#1C1C1E' : '#eaeaeb' }]}>
+                    <View style={s.statCardTop}>
+                      <View style={[s.statIconBox, { backgroundColor: budget.color + '12' }]}>
+                        <Ionicons name={budget.icon as any} size={14} color={budget.color} />
+                      </View>
+                      <Ionicons name="chevron-forward" size={10} color={colors.textTertiary} />
                     </View>
 
-                    <View style={s.statAmountRow}>
-                      <Text style={[s.statRemainingText, { color: colors.text }]}>Rs {remaining.toLocaleString()}</Text>
-                      <Text style={[s.statPercentText, { color: colors.textSecondary }]}>{Math.round(progress)}%</Text>
+                    <View style={s.statContent}>
+                      <Text style={[s.statCardTitle, { color: colors.text }]} numberOfLines={1}>{budget.name}</Text>
+                      <Text style={[s.statCardSubtitle, { color: colors.textSecondary }]} numberOfLines={1}>{budget.linkedCategoryName}</Text>
+                    </View>
+
+                    <View style={s.statProgressSection}>
+                      <View style={[s.progressTrack, { backgroundColor: isDark ? '#1C1C1E' : '#F2F2F7' }]}>
+                        <View style={[s.progressFill, { width: `${progress}%`, backgroundColor: budget.color }]} />
+                      </View>
+
+                      <View style={s.statAmountRow}>
+                        <Text style={[s.statRemainingText, { color: colors.text }]}>Rs {remaining.toLocaleString()}</Text>
+                        <Text style={[s.statPercentText, { color: colors.textSecondary }]}>{Math.round(progress)}%</Text>
+                      </View>
                     </View>
                   </View>
-                </View>
-              </TouchableOpacity>
+                </TouchableOpacity>
+              </Animated.View>
             );
           })
         )}
@@ -171,16 +205,9 @@ export default function HomeScreen() {
   const [pinnedHeaderH, setPinnedHeaderH] = useState(180);
 
   const scrollY = useRef(new Animated.Value(0)).current;
-  const listAnim = useRef(new Animated.Value(0)).current;
-
   useEffect(() => {
     if (isFocused) {
-      listAnim.setValue(0);
-      Animated.timing(listAnim, {
-        toValue: 1,
-        duration: 800,
-        useNativeDriver: true,
-      }).start();
+      // Container animation removed to prioritize individual item staggers
     }
   }, [isFocused]);
 
@@ -189,10 +216,7 @@ export default function HomeScreen() {
     if (height > 0) setPinnedHeaderH(height);
   }, []);
 
-  const listTranslateY = listAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [SCREEN_H * 0.8, 0]
-  });
+
 
   const statParallaxY = scrollY.interpolate({
     inputRange: [-100, 0, 1000],
@@ -267,7 +291,7 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        <Animated.View style={[s.txListBody, { backgroundColor: colors.bg, transform: [{ translateY: listTranslateY }] }]}>
+        <Animated.View style={[s.txListBody, { backgroundColor: colors.bg }]}>
           <TransactionList transactions={transactions} limit={10} />
           <View style={{ height: 120, backgroundColor: colors.bg }} />
         </Animated.View>

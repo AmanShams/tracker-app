@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Animated } from 'react-native';
 import { typography } from '../constants/typography';
 import { useBudgets } from '../store/budgetStore';
 import { useThemeStore } from '../store/themeStore';
+import { useIsFocused } from '@react-navigation/native';
 import { Transaction } from '../store/transactionStore';
 import { TransactionItem } from './transaction-item';
 
@@ -14,9 +15,46 @@ interface TransactionListProps {
   limit?: number;
 }
 
+const AnimatedListItem = ({ children, index, isFocused }: { children: React.ReactNode, index: number, isFocused: boolean }) => {
+  const anim = useRef(new Animated.Value(0)).current;
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    if (isFocused) {
+      setIsReady(true);
+      anim.setValue(0);
+      Animated.timing(anim, {
+        toValue: 1,
+        duration: 400, // snappier animation
+        delay: index * 200, // long sequential stagger
+        useNativeDriver: true,
+      }).start();
+    } else {
+      setIsReady(false);
+    }
+  }, [index, isFocused]); 
+
+  const translateY = anim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [60, 0],
+  });
+
+  const opacity = anim.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [0, 0, 1],
+  });
+
+  return (
+    <Animated.View style={{ opacity: isReady ? opacity : 0, transform: [{ translateY }] }}>
+      {children}
+    </Animated.View>
+  );
+};
+
 export function TransactionList({ transactions, showFilter = true, limit }: TransactionListProps) {
   const { colors } = useThemeStore();
   const { budgets } = useBudgets();
+  const isFocused = useIsFocused();
   const [activeFilter, setActiveFilter] = useState('All');
 
   const filtered = transactions.filter(tx => {
@@ -43,6 +81,8 @@ export function TransactionList({ transactions, showFilter = true, limit }: Tran
     return dateStr;
   };
 
+  let globalIndex = 0;
+
   return (
     <View style={s.container}>
       {showFilter && (
@@ -68,22 +108,31 @@ export function TransactionList({ transactions, showFilter = true, limit }: Tran
       )}
 
       <View style={s.list}>
-        {sortedDates.map((date) => (
-          <View key={date} style={s.dateGroup}>
-            <View style={s.dateHeader}>
-              <Text style={[s.dateHeaderText, { color: colors.textSecondary }]}>{getRelativeDate(date)}</Text>
-              <View style={[s.headerLine, { backgroundColor: colors.separator }]} />
+        {sortedDates.map((date) => {
+          const headerIndex = globalIndex++;
+          return (
+            <View key={date} style={s.dateGroup}>
+              <AnimatedListItem index={headerIndex} isFocused={isFocused}>
+                <View style={s.dateHeader}>
+                  <Text style={[s.dateHeaderText, { color: colors.textSecondary }]}>{getRelativeDate(date)}</Text>
+                  <View style={[s.headerLine, { backgroundColor: colors.separator }]} />
+                </View>
+              </AnimatedListItem>
+              {grouped[date].map((item, i) => {
+                const itemIndex = globalIndex++;
+                return (
+                  <AnimatedListItem key={item.id} index={itemIndex} isFocused={isFocused}>
+                    <TransactionItem
+                      item={item}
+                      last={i === grouped[date].length - 1}
+                      budgetName={item.budgetId ? budgets.find(b => b.id === item.budgetId)?.name : undefined}
+                    />
+                  </AnimatedListItem>
+                );
+              })}
             </View>
-            {grouped[date].map((item, i) => (
-              <TransactionItem
-                key={item.id}
-                item={item}
-                last={i === grouped[date].length - 1}
-                budgetName={item.budgetId ? budgets.find(b => b.id === item.budgetId)?.name : undefined}
-              />
-            ))}
-          </View>
-        ))}
+          );
+        })}
 
         {displayList.length === 0 && (
           <View style={{ paddingTop: 40, alignItems: 'center' }}>
