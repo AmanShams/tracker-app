@@ -45,7 +45,7 @@ export function TransactionItem({ item, last, budgetName }: TransactionItemProps
         </View>
         <View style={s.txAmountCol}>
           <Text style={[isIncome ? typography.amountPositive : typography.amountNegative, { color: isIncome ? colors.green : colors.red }]}>
-            {isIncome ? '+' : '−'}Rs {item.amount.toLocaleString()}
+            {isIncome ? '+' : '−'}Rs {(Number(item.amount) || 0).toLocaleString()}
           </Text>
         </View>
       </View>
@@ -55,7 +55,7 @@ export function TransactionItem({ item, last, budgetName }: TransactionItemProps
 }
 
 const s = StyleSheet.create({
-  txRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10 },
+  txRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 6 },
   txIconOuter: { width: 40, height: 40, borderRadius: 12, borderWidth: 1, padding: 1, marginRight: 10, alignItems: 'center', justifyContent: 'center' },
   txIconBox: { width: 34, height: 34, borderRadius: 10, borderWidth: 1.3, justifyContent: 'center', alignItems: 'center', flexShrink: 0 },
   txText: { flex: 1, marginRight: 8 },

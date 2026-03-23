@@ -153,8 +153,8 @@ const s = StyleSheet.create({
   dateHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
-    marginTop: 8,
+    marginBottom: 4,
+    marginTop: 4,
   },
   headerLine: {
     flex: 1,
@@ -162,7 +162,7 @@ const s = StyleSheet.create({
     marginLeft: 12,
   },
   dateHeaderText: {
-    fontFamily: 'Inter_600SemiBold',
+    fontFamily: 'Inter_400Regular',
     fontSize: 13,
     letterSpacing: -0.3,
   },
