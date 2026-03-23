@@ -61,8 +61,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 23,
     borderWidth: 1.2,
-    gap: 5,
-    paddingHorizontal: 12,
+    gap: 10,
+    paddingHorizontal: 24,
     height: '100%',
   },
   beltIconCircle: {

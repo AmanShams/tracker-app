@@ -34,7 +34,7 @@ const FILTERS = ['All', 'Expense', 'Income'];
 function BalanceCard() {
   const { balance } = useTransactions();
   const { colors } = useThemeStore();
-  
+
   const balanceStr = balance.toFixed(2);
   const [intPartRaw, decPart] = balanceStr.split('.');
   const intPart = intPartRaw.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
@@ -107,7 +107,7 @@ function StatCards() {
           budgets.map((budget: Budget, index: number) => {
             const remaining = Math.max(0, budget.amount - budget.spent);
             const progress = Math.min((remaining / budget.amount) * 100, 100);
-            
+
             const cardAnim = anim.interpolate({
               inputRange: [0, 1],
               outputRange: [100 + (index * 40), 0]
@@ -119,7 +119,7 @@ function StatCards() {
             });
 
             return (
-              <Animated.View 
+              <Animated.View
                 key={budget.id}
                 style={{ transform: [{ translateX: cardAnim }], opacity: isReady ? opacity : 0 }}
               >
@@ -347,17 +347,17 @@ const s = StyleSheet.create({
       android: { elevation: 30, shadowColor: '#9d9d9dff' },
       web: { filter: 'drop-shadow(0px -15px 15px rgba(0,0,0,0.3))' }
     }),
-    borderTopLeftRadius: 32, borderTopRightRadius: 32, backgroundColor: 'transparent', overflow: 'visible',
+    borderTopLeftRadius: 20, borderTopRightRadius: 20, backgroundColor: 'transparent', overflow: 'visible',
   },
-  overlapSheet: { borderTopLeftRadius: 32, borderTopRightRadius: 32, overflow: 'hidden' },
+  overlapSheet: { borderTopLeftRadius: 20, borderTopRightRadius: 20, overflow: 'hidden' },
   beltOuter: { paddingVertical: 5 },
-  beltRow: { flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'center' },
+  beltRow: { flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center' },
 
-  txSectionHeaderSticky: { borderTopLeftRadius: 32, borderTopRightRadius: 32, paddingHorizontal: 14, paddingTop: 16 },
+  txSectionHeaderSticky: { borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingHorizontal: 14, paddingTop: 20 },
   txHeaderMain: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
   txListBody: { paddingHorizontal: 14, paddingBottom: 40, zIndex: 5 },
   filterRow: { gap: 8, marginBottom: 10, alignItems: 'center' },
-  filterPill: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 20 },
+  filterPill: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 12 },
   txList: {},
   txRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10 },
   txIconOuter: { width: 40, height: 40, borderRadius: 12, borderWidth: 1, padding: 1, marginRight: 10, alignItems: 'center', justifyContent: 'center' },

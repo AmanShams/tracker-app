@@ -49,14 +49,14 @@ function AnimatedScale({ children, onPress, style }: { children: React.ReactNode
 function CustomTabBar({ state, descriptors, navigation }: any) {
   const { colors } = useThemeStore();
   const cornerBgColor = colors.bg;
-  
+
   return (
     <View style={[styles.tabBarContainer, { backgroundColor: colors.navBg }]}>
       <View style={[styles.invertedCorner, { left: 0, backgroundColor: colors.navBg }]}>
-        <View style={[styles.invertedCornerInner, { borderBottomLeftRadius: 32, backgroundColor: cornerBgColor }]} />
+        <View style={[styles.invertedCornerInner, { borderBottomLeftRadius: 20, backgroundColor: cornerBgColor }]} />
       </View>
       <View style={[styles.invertedCorner, { right: 0, backgroundColor: colors.navBg }]}>
-        <View style={[styles.invertedCornerInner, { borderBottomRightRadius: 32, backgroundColor: cornerBgColor }]} />
+        <View style={[styles.invertedCornerInner, { borderBottomRightRadius: 20, backgroundColor: cornerBgColor }]} />
       </View>
 
       <View style={styles.tabBar}>
@@ -149,9 +149,9 @@ const styles = StyleSheet.create({
   },
   invertedCorner: {
     position: 'absolute',
-    top: -32,
-    width: 32,
-    height: 32,
+    top: -24,
+    width: 24,
+    height: 24,
   },
   invertedCornerInner: {
     flex: 1,
