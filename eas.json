@@ -8,6 +8,9 @@
             "distribution": "internal",
             "android": {
                 "buildType": "apk"
+            },
+            "env": {
+                "ORG_GRADLE_PROJECT_reactNativeArchitectures": "arm64-v8a"
             }
         },
         "preview-lite": {
@@ -16,7 +19,7 @@
                 "buildType": "apk",
                 "gradleCommand": ":app:assembleRelease",
                 "env": {
-                   "REACT_NATIVE_PACKAGER_HOSTNAME": "localhost"
+                   "ORG_GRADLE_PROJECT_reactNativeArchitectures": "arm64-v8a"
                 }
             }
         },

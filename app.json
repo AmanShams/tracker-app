@@ -14,9 +14,6 @@
     },
     "android": {
       "package": "com.aman.tracker",
-      "gradleProps": {
-        "reactNativeArchitectures": "arm64-v8a"
-      },
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
