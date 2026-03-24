@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Animated } from 'react-native';
+import { useIsFocused } from '@react-navigation/native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { typography } from '../constants/typography';
 import { useBudgets } from '../store/budgetStore';
 import { useThemeStore } from '../store/themeStore';
-import { useIsFocused } from '@react-navigation/native';
 import { Transaction } from '../store/transactionStore';
 import { TransactionItem } from './transaction-item';
 
@@ -32,7 +32,7 @@ const AnimatedListItem = ({ children, index, isFocused }: { children: React.Reac
     } else {
       setIsReady(false);
     }
-  }, [index, isFocused]); 
+  }, [index, isFocused]);
 
   const translateY = anim.interpolate({
     inputRange: [0, 1],

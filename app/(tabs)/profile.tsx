@@ -236,6 +236,40 @@ export default function ProfileScreen() {
                   <Text style={{ color: '#FFF', fontWeight: 'bold' }}>Save</Text>
                 </TouchableOpacity>
               </View>
+
+              <TouchableOpacity 
+                onPress={async () => {
+                  const isExpoGo = Constants.appOwnership === 'expo';
+                  if (!isExpoGo) {
+                    try {
+                      const notifee = require('@notifee/react-native').default;
+                      const { AndroidImportance } = require('@notifee/react-native');
+                      await notifee.requestPermission();
+                      const channelId = await notifee.createChannel({ 
+                        id: 'test', 
+                        name: 'Test Notifications', 
+                        importance: AndroidImportance.HIGH 
+                      });
+                      await notifee.displayNotification({
+                        title: 'Test Notification 🔔',
+                        body: 'Success! Notifications are working on your device.',
+                        android: { 
+                          channelId, 
+                          importance: AndroidImportance.HIGH,
+                          pressAction: { id: 'default' } 
+                        },
+                      });
+                    } catch (e) {
+                      NativeAlert.alert('Error', 'Could not send test notification.');
+                    }
+                  } else {
+                    NativeAlert.alert('Not Supported', 'Test notifications only work in the installed build, not Expo Go.');
+                  }
+                }}
+                style={{ marginTop: 16, padding: 12, borderRadius: 14, borderWidth: 1, borderColor: colors.border, alignItems: 'center' }}
+              >
+                <Text style={{ color: colors.textSecondary, fontSize: 13, fontWeight: '500' }}>Send Test Notification Now</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </Modal>

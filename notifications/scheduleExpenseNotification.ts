@@ -7,6 +7,9 @@ export const scheduleExpenseNotification = async (time: { hour: number; minute: 
     const notifee = require('@notifee/react-native').default;
     const { TriggerType, RepeatFrequency, AndroidImportance } = require('@notifee/react-native');
 
+    // Request permissions (Android 13+)
+    await notifee.requestPermission();
+
     // Create a channel (Android requirement)
     const channelId = await notifee.createChannel({
       id: 'expense-reminders',
