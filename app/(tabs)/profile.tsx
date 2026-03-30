@@ -14,13 +14,13 @@ import {
 } from 'react-native';
 
 import { typography } from '@/constants/typography';
+import Constants from 'expo-constants';
+import { Alert, Modal, TextInput } from 'react-native';
 import { MainHeader } from '../../components/main-header';
+import { scheduleExpenseNotification } from '../../notifications/scheduleExpenseNotification';
 import { useBudgets } from '../../store/budgetStore';
 import { useThemeStore } from '../../store/themeStore';
 import { useTransactions } from '../../store/transactionStore';
-import { scheduleExpenseNotification } from '../../notifications/scheduleExpenseNotification';
-import { Modal, TextInput, Alert, AlertStatic } from 'react-native';
-import Constants from 'expo-constants';
 
 const NativeAlert = Platform.OS === 'web' ? { alert: (t: string, m: string) => alert(`${t}: ${m}`) } as any : Alert;
 
@@ -63,7 +63,7 @@ export default function ProfileScreen() {
   const handleSetTime = async () => {
     const h = parseInt(remindTime.hour);
     const m = parseInt(remindTime.minute);
-    
+
     if (isNaN(h) || isNaN(m) || h < 0 || h > 23 || m < 0 || m > 59) {
       NativeAlert.alert('Invalid Time', 'Please enter a valid hour (0-23) and minute (0-59).');
       return;
@@ -197,7 +197,7 @@ export default function ProfileScreen() {
           <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' }}>
             <View style={{ backgroundColor: colors.surface, width: '80%', borderRadius: 24, padding: 24, borderWidth: 1, borderColor: colors.border }}>
               <Text style={[typography.headingMedium, { color: colors.text, marginBottom: 20 }]}>Set Reminder Time</Text>
-              
+
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 25 }}>
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: colors.textSecondary, marginBottom: 8, fontSize: 12 }}>Hour (0-23)</Text>
@@ -223,21 +223,21 @@ export default function ProfileScreen() {
               </View>
 
               <View style={{ flexDirection: 'row', gap: 12 }}>
-                <TouchableOpacity 
-                   onPress={() => setTimeModalVisible(false)}
-                   style={{ flex: 1, padding: 16, borderRadius: 14, backgroundColor: isDark ? '#1C1C1E' : '#F5F5F7', alignItems: 'center' }}
+                <TouchableOpacity
+                  onPress={() => setTimeModalVisible(false)}
+                  style={{ flex: 1, padding: 16, borderRadius: 14, backgroundColor: isDark ? '#1C1C1E' : '#F5F5F7', alignItems: 'center' }}
                 >
                   <Text style={{ color: colors.textSecondary }}>Cancel</Text>
                 </TouchableOpacity>
-                <TouchableOpacity 
-                   onPress={handleSetTime}
-                   style={{ flex: 1, padding: 16, borderRadius: 14, backgroundColor: colors.accent, alignItems: 'center' }}
+                <TouchableOpacity
+                  onPress={handleSetTime}
+                  style={{ flex: 1, padding: 16, borderRadius: 14, backgroundColor: colors.accent, alignItems: 'center' }}
                 >
                   <Text style={{ color: '#FFF', fontWeight: 'bold' }}>Save</Text>
                 </TouchableOpacity>
               </View>
 
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={async () => {
                   const isExpoGo = Constants.appOwnership === 'expo';
                   if (!isExpoGo) {
@@ -245,18 +245,18 @@ export default function ProfileScreen() {
                       const notifee = require('@notifee/react-native').default;
                       const { AndroidImportance } = require('@notifee/react-native');
                       await notifee.requestPermission();
-                      const channelId = await notifee.createChannel({ 
-                        id: 'test', 
-                        name: 'Test Notifications', 
-                        importance: AndroidImportance.HIGH 
+                      const channelId = await notifee.createChannel({
+                        id: 'test',
+                        name: 'Test Notifications',
+                        importance: AndroidImportance.HIGH
                       });
                       await notifee.displayNotification({
                         title: 'Test Notification 🔔',
                         body: 'Success! Notifications are working on your device.',
-                        android: { 
-                          channelId, 
+                        android: {
+                          channelId,
                           importance: AndroidImportance.HIGH,
-                          pressAction: { id: 'default' } 
+                          pressAction: { id: 'default' }
                         },
                       });
                     } catch (e) {

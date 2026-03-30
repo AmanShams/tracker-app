@@ -152,7 +152,12 @@ export default function CategoriesScreen() {
                 <View>
                   <View style={s.row}>
                     <View style={[s.iconOuter, { backgroundColor: colors.surface, borderColor: isDark ? '#1C1C1E' : '#f8f8f8' }]}>
-                      <View style={[s.iconBox, { backgroundColor: item.color + '12', borderColor: isDark ? item.color + '40' : item.color + '20' }]}>
+                      <View style={[s.iconBox, { 
+                        backgroundColor: (item.color.length > 7 ? item.color.slice(0, 7) : item.color) + '12', 
+                        borderColor: isDark 
+                          ? (item.color.length > 7 ? item.color.slice(0, 7) : item.color) + '40' 
+                          : (item.color.length > 7 ? item.color.slice(0, 7) : item.color) + '20' 
+                      }]}>
                         <Ionicons name={item.icon as any} size={15} color={item.color} />
                       </View>
                     </View>

@@ -131,7 +131,7 @@ export default function SavingsScreen() {
             <Text style={s.statLabelSmall}>Remaining</Text>
             <View style={s.statValueLine}>
               <Text style={[s.statInt, { color: colors.text }]}>{rem.whole}</Text>
-              <Text style={[s.statDec, { color: colors.textTertiary }]}>{rem.dec}</Text>
+              <Text style={[s.statDec, { color: colors.textTertiary }]}>.{rem.dec}</Text>
             </View>
           </View>
           <View style={[s.vDivider, { backgroundColor: colors.separator }]} />
@@ -139,7 +139,7 @@ export default function SavingsScreen() {
             <Text style={s.statLabelSmall}>Total Spent</Text>
             <View style={s.statValueLine}>
               <Text style={[s.statInt, { color: colors.text }]}>{spent.whole}</Text>
-              <Text style={[s.statDec, { color: colors.textTertiary }]}>{spent.dec}</Text>
+              <Text style={[s.statDec, { color: colors.textTertiary }]}>.{spent.dec}</Text>
             </View>
           </View>
         </View>

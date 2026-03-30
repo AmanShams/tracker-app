@@ -32,7 +32,7 @@ export default function AddTransactionScreen() {
   }>();
   
   const { categories } = useCategories();
-  const { addTransaction, updateTransaction, transactions, balance } = useTransactions();
+  const { addTransaction, updateTransaction, deleteTransaction, transactions, balance } = useTransactions();
   const { budgets, updateBudgetSpent } = useBudgets();
   const { isDark, colors } = useThemeStore();
 
@@ -47,9 +47,9 @@ export default function AddTransactionScreen() {
   const [date, setDate] = useState(() => new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }));
   const [time, setTime] = useState(() => new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase());
 
-  const numAmount = parseFloat(amount || '0');
+  const numAmount = parseFloat(amount.replace(/[\s,]/g, '') || '0');
   const isSpent = (params.type === 'expense') || (selectedCategory?.type === 'expense');
-  const isOverBalance = isSpent && !isNaN(numAmount) && amount !== '' && numAmount > (params.editId ? 999999 : balance); // Allow edit if existing
+  const isOverBalance = isSpent && !isNaN(numAmount) && amount !== '' && numAmount > balance;
 
   // 1. Initial State from Params (ReadOnly or Edit Logic)
   const isReadOnlyMode = !!params.budgetId;
@@ -110,7 +110,7 @@ export default function AddTransactionScreen() {
 
   const handleSave = () => {
     if (!name || !amount || !selectedCategory) return;
-    const numAmountValue = parseFloat(amount);
+    const numAmountValue = parseFloat(amount.replace(/[\s,]/g, ''));
     
     if (isEditMode && params.editId) {
       const oldTx = transactions.find(t => t.id === params.editId);
@@ -215,7 +215,7 @@ export default function AddTransactionScreen() {
                     setIsBudgetLinked(false); 
                     setSelectedBudgetId(null);
                   }}
-                  style={[s.catChip, { backgroundColor: isDark ? colors.bg : '#F2F2F7' }, isActive && { backgroundColor: cat.color + '15', borderColor: cat.color }, isReadOnlyMode && s.readOnlyChip]}
+                  style={[s.catChip, { backgroundColor: isDark ? colors.bg : '#F2F2F7' }, isActive && { backgroundColor: (cat.color.length > 7 ? cat.color.slice(0, 7) : cat.color) + '15', borderColor: cat.color }, isReadOnlyMode && s.readOnlyChip]}
                 >
                   <View style={[s.catIcon, { backgroundColor: cat.color }]}>
                     <Ionicons name={cat.icon as any} size={12} color="#FFF" />
@@ -296,6 +296,26 @@ export default function AddTransactionScreen() {
           />
         </View>
 
+        {/* Delete Transaction (Only in Edit Mode) */}
+        {isEditMode && (
+          <TouchableOpacity 
+            style={[s.deleteBtn, { borderColor: colors.red }]}
+            onPress={() => {
+              if (params.editId) {
+                const oldTx = transactions.find(t => t.id === params.editId);
+                if (oldTx && oldTx.budgetId) {
+                  updateBudgetSpent(oldTx.budgetId, -oldTx.amount);
+                }
+                deleteTransaction(params.editId);
+                router.back();
+              }
+            }}
+          >
+            <Ionicons name="trash-outline" size={18} color={colors.red} style={{ marginRight: 6 }} />
+            <Text style={[s.deleteBtnText, { color: colors.red }]}>Delete Transaction</Text>
+          </TouchableOpacity>
+        )}
+
       </ScrollView>
 
       {/* Save Button */}
@@ -305,10 +325,10 @@ export default function AddTransactionScreen() {
           style={[
             s.saveBtn, 
             { backgroundColor: colors.primary }, 
-            (!name || !amount || !selectedCategory || isOverBalance) && { opacity: 0.5 }
+            (!name || !amount || !selectedCategory) && { opacity: 0.5 }
           ]} 
           onPress={handleSave} 
-          disabled={!name || !amount || !selectedCategory || isOverBalance}
+          disabled={!name || !amount || !selectedCategory}
         >
           <Text style={[s.saveBtnText, { color: isDark ? '#000' : '#FFF' }]}>Save Transaction</Text>
         </TouchableOpacity>
@@ -350,4 +370,6 @@ const s = StyleSheet.create({
   bottomContainer: { position: 'absolute', bottom: Platform.OS === 'android' ? 20 : 30, left: 20, right: 20 },
   saveBtn: { borderRadius: 18, paddingVertical: 18, alignItems: 'center' },
   saveBtnText: { fontFamily: 'Inter_600SemiBold', fontSize: 16 },
+  deleteBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderRadius: 16, paddingVertical: 16, marginTop: 40 },
+  deleteBtnText: { fontFamily: 'Inter_600SemiBold', fontSize: 15 },
 });

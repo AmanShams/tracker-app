@@ -49,7 +49,7 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
       amount: 500,
       spent: 0,
       icon: 'heart-outline',
-      color: '#EF4444',
+      color: '#c665feff',
       bgColor: '#FEE2E2',
       linkedCategoryName: 'Charity',
     },

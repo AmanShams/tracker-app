@@ -39,9 +39,19 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
     const loadData = async () => {
       try {
         const storedTransactions = await AsyncStorage.getItem(STORAGE_KEY);
+        let parsedTransactions: Transaction[] = [];
+        if (storedTransactions) {
+          parsedTransactions = JSON.parse(storedTransactions);
+          setTransactions(parsedTransactions);
+        }
+        
         const storedBalance = await AsyncStorage.getItem('balance_data');
-        if (storedTransactions) setTransactions(JSON.parse(storedTransactions));
-        if (storedBalance) setBalance(Number(storedBalance));
+        let parsedBalance = Number(storedBalance);
+        if (isNaN(parsedBalance)) {
+          // Fallback to calculating from transactions if corruption exists
+          parsedBalance = parsedTransactions.reduce((acc, tx) => acc + (tx.type === 'income' ? tx.amount : -tx.amount), 0);
+        }
+        setBalance(parsedBalance);
       } catch (e) {
         console.error('Failed to load transactions', e);
       } finally {
@@ -69,41 +79,39 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
     
     // Update balance
     if (tx.type === 'income') {
-      setBalance(prev => prev + tx.amount);
+      setBalance(prev => (isNaN(prev) ? 0 : prev) + tx.amount);
     } else {
-      setBalance(prev => prev - tx.amount);
+      setBalance(prev => (isNaN(prev) ? 0 : prev) - tx.amount);
     }
   };
 
   const updateTransaction = (updatedTx: Transaction) => {
-    setTransactions(prev => {
-      const oldTx = prev.find(t => t.id === updatedTx.id);
-      if (!oldTx) return prev;
-      
-      // Update balance
-      setBalance(b => {
-        let newBalance = b;
-        // Undo old
-        if (oldTx.type === 'income') newBalance -= oldTx.amount;
-        else newBalance += oldTx.amount;
-        // Apply new
-        if (updatedTx.type === 'income') newBalance += updatedTx.amount;
-        else newBalance -= updatedTx.amount;
-        return newBalance;
-      });
-      
-      return prev.map(t => t.id === updatedTx.id ? updatedTx : t);
+    const oldTx = transactions.find(t => t.id === updatedTx.id);
+    if (!oldTx) return;
+
+    setBalance(b => {
+      let newBalance = isNaN(b) ? 0 : b;
+      // Undo old
+      if (oldTx.type === 'income') newBalance -= oldTx.amount;
+      else newBalance += oldTx.amount;
+      // Apply new
+      if (updatedTx.type === 'income') newBalance += updatedTx.amount;
+      else newBalance -= updatedTx.amount;
+      return newBalance;
     });
+
+    setTransactions(prev => prev.map(t => t.id === updatedTx.id ? updatedTx : t));
   };
 
   const deleteTransaction = (id: string) => {
-    setTransactions(prev => {
-      const oldTx = prev.find(t => t.id === id);
-      if (oldTx) {
-        setBalance(b => oldTx.type === 'income' ? b - oldTx.amount : b + oldTx.amount);
-      }
-      return prev.filter(t => t.id !== id);
+    const oldTx = transactions.find(t => t.id === id);
+    if (!oldTx) return;
+
+    setBalance(b => {
+      const current = isNaN(b) ? 0 : b;
+      return oldTx.type === 'income' ? current - oldTx.amount : current + oldTx.amount;
     });
+    setTransactions(prev => prev.filter(t => t.id !== id));
   };
 
   return (

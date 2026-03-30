@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
   KeyboardAvoidingView,
@@ -18,7 +18,7 @@ import { CategoryType, useCategories } from '../store/categoryStore';
 import { useThemeStore } from '../store/themeStore';
 
 const PRESET_COLORS = [
-  '#10B981', '#3B82F6', '#EF4444', '#F59E0B', '#6366F1', '#EC4899', '#8B5CF6', '#06B6D4'
+  '#10B981', '#4c8ef8ff', '#faa615ff', '#6366F1', '#976affff', '#15d8faff', '#7be0ad', '#ffd60a', '#c665feff'
 ];
 
 const PRESET_ICONS = [
