@@ -27,7 +27,12 @@ export function TransactionItem({ item, last, budgetName }: TransactionItemProps
     >
       <View style={s.txRow}>
         <View style={[s.txIconOuter, { backgroundColor: colors.surface, borderColor: isDark ? '#1C1C1E' : '#f8f8f8' }]}>
-          <View style={[s.txIconBox, { backgroundColor: item.categoryColor + '12', borderColor: isDark ? item.categoryColor + '30' : item.categoryColor + '20' }]}>
+          <View style={[s.txIconBox, { 
+            backgroundColor: (item.categoryColor.length > 7 ? item.categoryColor.slice(0, 7) : item.categoryColor) + '12', 
+            borderColor: isDark 
+              ? (item.categoryColor.length > 7 ? item.categoryColor.slice(0, 7) : item.categoryColor) + '30' 
+              : (item.categoryColor.length > 7 ? item.categoryColor.slice(0, 7) : item.categoryColor) + '20' 
+          }]}>
             <Ionicons name={item.categoryIcon as any} size={15} color={item.categoryColor} />
           </View>
         </View>

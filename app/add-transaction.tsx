@@ -44,7 +44,7 @@ export default function AddTransactionScreen() {
   const [amount, setAmount] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [notes, setNotes] = useState('');
-  const [date, setDate] = useState(() => new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }));
+  const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [time, setTime] = useState(() => new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase());
 
   const numAmount = parseFloat(amount.replace(/[\s,]/g, '') || '0');
@@ -215,7 +215,7 @@ export default function AddTransactionScreen() {
                     setIsBudgetLinked(false); 
                     setSelectedBudgetId(null);
                   }}
-                  style={[s.catChip, { backgroundColor: isDark ? colors.bg : '#F2F2F7' }, isActive && { backgroundColor: (cat.color.length > 7 ? cat.color.slice(0, 7) : cat.color) + '15', borderColor: cat.color }, isReadOnlyMode && s.readOnlyChip]}
+                  style={[s.catChip, { backgroundColor: isDark ? colors.bg : '#F2F2F7' }, isActive && { backgroundColor: ((cat.color || colors.primary).length > 7 ? (cat.color || colors.primary).slice(0, 7) : (cat.color || colors.primary)) + '15', borderColor: cat.color }, isReadOnlyMode && s.readOnlyChip]}
                 >
                   <View style={[s.catIcon, { backgroundColor: cat.color }]}>
                     <Ionicons name={cat.icon as any} size={12} color="#FFF" />

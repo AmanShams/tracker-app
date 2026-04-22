@@ -1,5 +1,8 @@
 import { typography } from '@/constants/typography';
 import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+dayjs.extend(customParseFormat);
+
 import React, { useMemo, useState } from 'react';
 import { ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { PieChart } from 'react-native-gifted-charts';
@@ -148,18 +151,28 @@ function SpendingHeatmap({
   const endDate = today.endOf('week');
   const startDate = endDate.subtract(weeksToShow * 7 - 1, 'day').startOf('week');
 
-  const dailyTotals = useMemo(() => {
-    const map: Record<string, number> = {};
+  const { dailyActivity, maxIncome, maxExpense } = useMemo(() => {
+    const map: Record<string, { income: number; expense: number }> = {};
+    let maxI = 1, maxE = 1;
     transactions.forEach(tx => {
-      if (tx.type === 'expense' && tx.date) {
-        const d = dayjs(tx.date).format('YYYY-MM-DD');
-        map[d] = (map[d] || 0) + tx.amount;
+      if (tx.date) {
+        const parsed = dayjs(tx.date, ['YYYY-MM-DD', 'MMM D, YYYY', 'MMM DD, YYYY'], true);
+        if (parsed.isValid()) {
+          const d = parsed.format('YYYY-MM-DD');
+          if (!map[d]) map[d] = { income: 0, expense: 0 };
+          const amt = Number(tx.amount) || 0;
+          if (tx.type === 'income') {
+            map[d].income += amt;
+            if (map[d].income > maxI) maxI = map[d].income;
+          } else {
+            map[d].expense += amt;
+            if (map[d].expense > maxE) maxE = map[d].expense;
+          }
+        }
       }
     });
-    return map;
+    return { dailyActivity: map, maxIncome: maxI, maxExpense: maxE };
   }, [transactions]);
-
-  const maxSpend = Math.max(...Object.values(dailyTotals), 1);
   const grid = [];
   let monthLabels: { label: string; index: number }[] = [];
   let lastMonth = '';
@@ -177,7 +190,7 @@ function SpendingHeatmap({
       if (date.isAfter(today)) week.push(null);
       else {
         const key = date.format('YYYY-MM-DD');
-        week.push({ date: key, total: dailyTotals[key] || 0 });
+        week.push({ date: key, activity: dailyActivity[key] || { income: 0, expense: 0 } });
       }
     }
     grid.push(week);
@@ -191,7 +204,7 @@ function SpendingHeatmap({
       style={{ marginTop: 24, paddingHorizontal: 5, width: '100%' }}
     >
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-        <Text style={[typography.headingMedium, { color: colors.text, fontSize: 16 }]}>Spending Intensity</Text>
+        <Text style={[typography.headingMedium, { color: colors.text, fontSize: 16 }]}>Financial Activity Heatmap</Text>
       </View>
 
       <ScrollView
@@ -209,10 +222,22 @@ function SpendingHeatmap({
               {week.map((day, dIdx) => {
                 if (!day) return <View key={dIdx} style={{ width: cellSize, height: cellSize }} />;
 
-                const ratio = day.total / maxSpend;
-                const isSpent = day.total > 0;
-                const opacity = isSpent
-                  ? 0.25 + (ratio * 0.75)
+                const { income, expense } = day.activity;
+                const isIncome = income > 0;
+                const isExpense = expense > 0;
+                
+                let color = colors.red;
+                let ratio = 0;
+                if (isIncome) {
+                  color = colors.green;
+                  ratio = income / maxIncome;
+                } else if (isExpense) {
+                  color = colors.red;
+                  ratio = expense / maxExpense;
+                }
+
+                const opacity = (isIncome || isExpense)
+                  ? 0.25 + (Math.min(ratio, 1) * 0.75)
                   : (isDark ? 0.08 : 0.04);
 
                 return (
@@ -222,7 +247,7 @@ function SpendingHeatmap({
                       width: cellSize,
                       height: cellSize,
                       borderRadius: 2,
-                      backgroundColor: colors.red,
+                      backgroundColor: color,
                       opacity
                     }}
                   />
@@ -234,12 +259,16 @@ function SpendingHeatmap({
       </ScrollView>
 
 
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12, justifyContent: 'flex-end', gap: 6 }}>
-        <Text style={[typography.caption, { color: colors.textSecondary, fontSize: 9 }]}>Less</Text>
-        {[0.08, 0.35, 0.65, 1.0].map((o, i) => (
-          <View key={i} style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: colors.red, opacity: o }} />
-        ))}
-        <Text style={[typography.caption, { color: colors.textSecondary, fontSize: 9 }]}>More</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12, justifyContent: 'flex-end', gap: 10 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+          <Text style={[typography.caption, { color: colors.textSecondary, fontSize: 9 }]}>Spent</Text>
+          <View style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: colors.red, opacity: 0.8 }} />
+        </View>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+          <Text style={[typography.caption, { color: colors.textSecondary, fontSize: 9 }]}>Received</Text>
+          <View style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: colors.green, opacity: 0.8 }} />
+        </View>
+        <Text style={[typography.caption, { color: colors.textSecondary, fontSize: 9, marginLeft: 6 }]}>Intensity →</Text>
       </View>
     </View>
   );
@@ -257,16 +286,20 @@ export default function ActivitiesScreen() {
 
     const filtered = withIdx.filter(item => {
       const tx = item.tx;
-      if (!tx.date || !dayjs(tx.date).isValid() || isNaN(tx.amount)) return false;
-      if (activeRange === 'W') return dayjs(tx.date).isAfter(now.subtract(7, 'day'));
-      if (activeRange === 'M') return dayjs(tx.date).isAfter(now.subtract(30, 'day'));
-      if (activeRange === 'Y') return dayjs(tx.date).isAfter(now.subtract(1, 'year'));
+      if (!tx.date || isNaN(Number(tx.amount))) return false;
+      
+      const parsed = dayjs(tx.date, ['YYYY-MM-DD', 'MMM D, YYYY', 'MMM DD, YYYY'], true);
+      if (!parsed.isValid()) return false;
+
+      if (activeRange === 'W') return parsed.isAfter(now.subtract(7, 'day'));
+      if (activeRange === 'M') return parsed.isAfter(now.subtract(30, 'day'));
+      if (activeRange === 'Y') return parsed.isAfter(now.subtract(1, 'year'));
       return true;
     });
 
     const sorted = filtered.sort((a, b) => {
-      const d_a = dayjs(a.tx.date).valueOf();
-      const d_b = dayjs(b.tx.date).valueOf();
+      const d_a = dayjs(a.tx.date, ['YYYY-MM-DD', 'MMM D, YYYY', 'MMM DD, YYYY']).valueOf();
+      const d_b = dayjs(b.tx.date, ['YYYY-MM-DD', 'MMM D, YYYY', 'MMM DD, YYYY']).valueOf();
       if (d_a !== d_b) return d_a - d_b;
       return b.index - a.index;
     }).map(i => i.tx);
@@ -274,7 +307,8 @@ export default function ActivitiesScreen() {
     const balancePoints: ChartPoint[] = [{ value: 0 }];
     let running = 0;
     sorted.forEach((tx) => {
-      running += tx.type === 'income' ? tx.amount : -tx.amount;
+      const val = Number(tx.amount) || 0;
+      running += tx.type === 'income' ? val : -val;
       balancePoints.push({ value: running });
     });
 

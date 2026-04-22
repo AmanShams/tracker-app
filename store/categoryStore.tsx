@@ -22,18 +22,18 @@ const CategoryContext = createContext<CategoryContextType | undefined>(undefined
 
 export function CategoryProvider({ children }: { children: React.ReactNode }) {
   const [categories, setCategories] = useState<Category[]>([
-    { id: '1', name: 'Salary', icon: 'cash-outline', color: '#10B981', type: 'income', createdAt: "Mar 16, '26" },
-    { id: '2', name: 'Freelance', icon: 'laptop-outline', color: '#4c8ef8ff', type: 'income', createdAt: "Mar 16, '26" },
-    { id: '3', name: 'Transport', icon: 'bus-outline', color: '#faa615ff', type: 'expense', createdAt: "Mar 16, '26" },
-    { id: '4', name: 'Rent', icon: 'home-outline', color: '#6366F1', type: 'expense', createdAt: "Mar 16, '26" },
-    { id: '5', name: 'Monthly Hygiene', icon: 'water-outline', color: '#976affff', type: 'expense', createdAt: "Mar 16, '26" },
-    { id: '6', name: 'Charity', icon: 'heart-outline', color: '#c665feff', type: 'expense', createdAt: "Mar 16, '26" },
-    { id: '7', name: 'Food & Dining', icon: 'fast-food-outline', color: '#faa615ff', type: 'expense', createdAt: "Mar 16, '26" },
-    { id: '8', name: 'Shopping', icon: 'cart-outline', color: '#7be0ad', type: 'expense', createdAt: "Mar 16, '26" },
-    { id: '9', name: 'Health', icon: 'medical-outline', color: '#ffd60a', type: 'expense', createdAt: "Mar 16, '26" },
-    { id: '10', name: 'Education', icon: 'school-outline', color: '#15d8faff', type: 'expense', createdAt: "Mar 16, '26" },
-    { id: '11', name: 'Entertainment', icon: 'game-controller-outline', color: '#c665feff', type: 'expense', createdAt: "Mar 16, '26" },
-    { id: '12', name: 'Bills', icon: 'receipt-outline', color: '#4c8ef8ff', type: 'expense', createdAt: "Mar 16, '26" },
+    { id: '1', name: 'Salary', icon: 'cash-outline', color: '#10B981', type: 'income', createdAt: "Apr 19, '26" },
+    { id: '2', name: 'Freelance', icon: 'laptop-outline', color: '#4c8ef8', type: 'income', createdAt: "Apr 19, '26" },
+    { id: '3', name: 'Transport', icon: 'bus-outline', color: '#faa615', type: 'expense', createdAt: "Apr 19, '26" },
+    { id: '4', name: 'Rent', icon: 'home-outline', color: '#6366F1', type: 'expense', createdAt: "Apr 19, '26" },
+    { id: '5', name: 'Monthly Hygiene', icon: 'water-outline', color: '#976aff', type: 'expense', createdAt: "Apr 19, '26" },
+    { id: '6', name: 'Charity', icon: 'heart-outline', color: '#c665fe', type: 'expense', createdAt: "Apr 19, '26" },
+    { id: '7', name: 'Food & Dining', icon: 'fast-food-outline', color: '#faa615', type: 'expense', createdAt: "Apr 19, '26" },
+    { id: '8', name: 'Shopping', icon: 'cart-outline', color: '#7be0ad', type: 'expense', createdAt: "Apr 19, '26" },
+    { id: '9', name: 'Health', icon: 'medical-outline', color: '#ffd60a', type: 'expense', createdAt: "Apr 19, '26" },
+    { id: '10', name: 'Education', icon: 'school-outline', color: '#15d8fa', type: 'expense', createdAt: "Apr 19, '26" },
+    { id: '11', name: 'Entertainment', icon: 'game-controller-outline', color: '#c665fe', type: 'expense', createdAt: "Apr 19, '26" },
+    { id: '12', name: 'Bills', icon: 'receipt-outline', color: '#4c8ef8', type: 'expense', createdAt: "Apr 19, '26" },
   ]);
 
   const addCategory = (newCat: Omit<Category, 'id' | 'createdAt'>) => {

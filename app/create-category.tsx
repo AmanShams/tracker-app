@@ -18,7 +18,7 @@ import { CategoryType, useCategories } from '../store/categoryStore';
 import { useThemeStore } from '../store/themeStore';
 
 const PRESET_COLORS = [
-  '#10B981', '#4c8ef8ff', '#faa615ff', '#6366F1', '#976affff', '#15d8faff', '#7be0ad', '#ffd60a', '#c665feff'
+  '#10B981', '#4c8ef8', '#faa615', '#6366F1', '#976aff', '#15d8fa', '#7be0ad', '#ffd60a', '#c665fe'
 ];
 
 const PRESET_ICONS = [

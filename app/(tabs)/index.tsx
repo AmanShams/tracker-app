@@ -134,7 +134,7 @@ function StatCards() {
                 >
                   <View style={[s.statCardInner, { backgroundColor: colors.surface, borderColor: isDark ? '#1C1C1E' : '#eaeaeb' }]}>
                     <View style={s.statCardTop}>
-                      <View style={[s.statIconBox, { backgroundColor: budget.color + '12' }]}>
+                      <View style={[s.statIconBox, { backgroundColor: (budget.color.length > 7 ? budget.color.slice(0, 7) : budget.color) + '12' }]}>
                         <Ionicons name={budget.icon as any} size={14} color={budget.color} />
                       </View>
                       <Ionicons name="chevron-forward" size={10} color={colors.textTertiary} />

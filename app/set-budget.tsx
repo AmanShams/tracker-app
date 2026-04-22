@@ -62,7 +62,7 @@ export default function SetBudgetScreen() {
         amount: numAmountValue,
         icon: selectedCategory.icon,
         color: selectedCategory.color,
-        bgColor: selectedCategory.color + '15',
+        bgColor: (selectedCategory.color.length > 7 ? selectedCategory.color.slice(0, 7) : selectedCategory.color) + '15',
         linkedCategoryName: selectedCategory.name
       });
     } else {
@@ -149,7 +149,7 @@ export default function SetBudgetScreen() {
                         setSelectedCategory(cat);
                         if (!name) setName(cat.name + ' Budget');
                       }}
-                      style={[styles.catChip, { backgroundColor: isDark ? colors.bg : '#F2F2F7' }, isActive && { backgroundColor: cat.color + '15', borderColor: cat.color }]}
+                      style={[styles.catChip, { backgroundColor: isDark ? colors.bg : '#F2F2F7' }, isActive && { backgroundColor: (cat.color.length > 7 ? cat.color.slice(0, 7) : cat.color) + '15', borderColor: cat.color }]}
                     >
                       <View style={[styles.catIcon, { backgroundColor: cat.color }]}>
                         <Ionicons name={cat.icon as any} size={12} color="#FFF" />
