@@ -1,4 +1,4 @@
-Fimport dayjs from 'dayjs';
+import dayjs from 'dayjs';
 
 export interface Expense {
   id: string;
