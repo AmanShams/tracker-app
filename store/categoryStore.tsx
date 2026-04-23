@@ -34,6 +34,7 @@ export function CategoryProvider({ children }: { children: React.ReactNode }) {
     { id: '10', name: 'Education', icon: 'school-outline', color: '#15d8fa', type: 'expense', createdAt: "Apr 19, '26" },
     { id: '11', name: 'Entertainment', icon: 'game-controller-outline', color: '#c665fe', type: 'expense', createdAt: "Apr 19, '26" },
     { id: '12', name: 'Bills', icon: 'receipt-outline', color: '#4c8ef8', type: 'expense', createdAt: "Apr 19, '26" },
+    { id: 'notification-fixed', name: 'From Notifications', icon: 'notifications-outline', color: '#6366F1', type: 'expense', createdAt: "Apr 19, '26" },
   ]);
 
   const addCategory = (newCat: Omit<Category, 'id' | 'createdAt'>) => {
@@ -49,8 +50,10 @@ export function CategoryProvider({ children }: { children: React.ReactNode }) {
   };
 
   const deleteCategory = (id: string) => {
+    if (id === 'notification-fixed') return; // Cannot delete this category
     setCategories(prev => prev.filter(c => c.id !== id));
   };
+
 
   const updateCategory = (updatedCat: Category) => {
     setCategories(prev => prev.map(c => c.id === updatedCat.id ? updatedCat : c));

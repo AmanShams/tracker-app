@@ -225,7 +225,7 @@ function SpendingHeatmap({
                 const { income, expense } = day.activity;
                 const isIncome = income > 0;
                 const isExpense = expense > 0;
-                
+
                 let color = colors.red;
                 let ratio = 0;
                 if (isIncome) {
@@ -268,7 +268,6 @@ function SpendingHeatmap({
           <Text style={[typography.caption, { color: colors.textSecondary, fontSize: 9 }]}>Received</Text>
           <View style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: colors.green, opacity: 0.8 }} />
         </View>
-        <Text style={[typography.caption, { color: colors.textSecondary, fontSize: 9, marginLeft: 6 }]}>Intensity →</Text>
       </View>
     </View>
   );
@@ -287,7 +286,7 @@ export default function ActivitiesScreen() {
     const filtered = withIdx.filter(item => {
       const tx = item.tx;
       if (!tx.date || isNaN(Number(tx.amount))) return false;
-      
+
       const parsed = dayjs(tx.date, ['YYYY-MM-DD', 'MMM D, YYYY', 'MMM DD, YYYY'], true);
       if (!parsed.isValid()) return false;
 
@@ -322,16 +321,20 @@ export default function ActivitiesScreen() {
     let totalIncome = 0;
 
     chartData.filteredTransactions.forEach(tx => {
+      const displayName = tx.categoryName === 'From Notifications' ? 'Uncategorized' : tx.categoryName;
+      const displayColor = tx.categoryName === 'From Notifications' ? '#FACC15' : (tx.categoryColor || (tx.type === 'expense' ? colors.red : colors.green));
+
       if (tx.type === 'expense') {
-        if (!expenses[tx.categoryName]) expenses[tx.categoryName] = { value: 0, color: tx.categoryColor || colors.red };
-        expenses[tx.categoryName].value += tx.amount;
+        if (!expenses[displayName]) expenses[displayName] = { value: 0, color: displayColor };
+        expenses[displayName].value += tx.amount;
         totalExpense += tx.amount;
       } else {
-        if (!incomes[tx.categoryName]) incomes[tx.categoryName] = { value: 0, color: tx.categoryColor || colors.green };
-        incomes[tx.categoryName].value += tx.amount;
+        if (!incomes[displayName]) incomes[displayName] = { value: 0, color: displayColor };
+        incomes[displayName].value += tx.amount;
         totalIncome += tx.amount;
       }
     });
+
 
     const formatData = (map: typeof expenses, total: number) => {
       const items = Object.entries(map).map(([name, data]) => ({

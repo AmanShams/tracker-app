@@ -15,23 +15,25 @@ import {
 
 import { typography } from '@/constants/typography';
 import Constants from 'expo-constants';
-import { Alert, Modal, TextInput } from 'react-native';
+import { Alert, TextInput } from 'react-native';
 import { MainHeader } from '../../components/main-header';
+import { handleExpenseReply } from '../../notifications/notificationReplyHandler';
 import { scheduleExpenseNotification } from '../../notifications/scheduleExpenseNotification';
 import { useBudgets } from '../../store/budgetStore';
 import { useThemeStore } from '../../store/themeStore';
 import { useTransactions } from '../../store/transactionStore';
 
+
 const NativeAlert = Platform.OS === 'web' ? { alert: (t: string, m: string) => alert(`${t}: ${m}`) } as any : Alert;
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { transactions, balance } = useTransactions();
+  const { transactions, balance, refreshTransactions } = useTransactions();
   const { budgets } = useBudgets();
   const { isDark, mode, setMode, toggleTheme, colors } = useThemeStore();
+
   const [pinnedHeaderH, setPinnedHeaderH] = useState(130);
-  const [isTimeModalVisible, setTimeModalVisible] = useState(false);
-  const [remindTime, setRemindTime] = useState({ hour: '20', minute: '00' });
+
 
   const onPinnedLayout = useCallback((event: LayoutChangeEvent) => {
     const { height } = event.nativeEvent.layout;
@@ -54,7 +56,7 @@ export default function ProfileScreen() {
     { id: '1', title: 'Personal Info', icon: 'person-outline' },
     { id: '2', title: 'Security', icon: 'shield-checkmark-outline' },
     // { id: 'dark_mode', title: `Theme: ${getThemeDisplay()}`, icon: isDark ? 'moon' : 'moon-outline', isToggle: true },
-    { id: 'reminders', title: 'Daily Reminder', icon: 'notifications-outline' },
+    { id: 'reminders', title: 'Reminders', icon: 'notifications-outline' },
     { id: '3', title: 'Payment Methods', icon: 'card-outline' },
     { id: '4', title: 'Data & Privacy', icon: 'finger-print-outline' },
     { id: '5', title: 'Help & Support', icon: 'help-circle-outline' },
@@ -135,9 +137,15 @@ export default function ProfileScreen() {
                 activeOpacity={0.7}
                 style={s.menuRow}
                 onPress={() => {
-                  if (item.id === 'reminders') setTimeModalVisible(true);
-                  else if (item.isToggle) toggleTheme();
+                  console.log('Clicked setting:', item.id);
+                  if (item.id === 'reminders') {
+                    router.push('/reminders');
+                  } else if (item.isToggle) {
+                    toggleTheme();
+                  }
                 }}
+
+
               >
                 <View style={[s.menuIconWrapper, { borderColor: colors.border }]}>
                   <View style={[s.menuIconBox, { backgroundColor: isDark ? '#1C1C1E' : '#F5F5F7', borderColor: isDark ? '#2C2C2E' : '#E8E8ED' }]}>
@@ -159,6 +167,38 @@ export default function ProfileScreen() {
             </View>
           ))}
         </View>
+
+        {/* WEB ONLY: Simulate Notification */}
+        {Platform.OS === 'web' && (
+          <View style={s.debugSection}>
+            <Text style={[s.debugTitle, { color: colors.text }]}>Simulation Dashboard</Text>
+            <View style={[s.debugCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <Text style={[s.debugSubtitle, { color: colors.textSecondary }]}>Test Notification Workflow</Text>
+              <TextInput
+                style={[s.debugInput, { backgroundColor: colors.bg, color: colors.text, borderColor: colors.border }]}
+                placeholder="Type: Name Amount (e.g. Lunch 500)"
+                placeholderTextColor={colors.textTertiary}
+                onSubmitEditing={async (e) => {
+                  const text = e.nativeEvent.text;
+                  if (text) {
+                    await handleExpenseReply({
+                      type: 2, // Mocking ACTION_PRESS
+                      detail: {
+                        input: text,
+                        pressAction: { id: 'reply' }
+                      }
+                    });
+                    await refreshTransactions();
+                    NativeAlert.alert('Simulation', `Sent "${text}" to notification handler.`);
+                  }
+                }}
+
+              />
+              <Text style={s.debugHint}>Press enter to simulate a notification "Send" action.</Text>
+            </View>
+          </View>
+        )}
+
 
         {/* Footer Info */}
         <View style={s.footerSection}>
@@ -192,91 +232,10 @@ export default function ProfileScreen() {
           <Text style={[s.appInfo, { color: colors.textTertiary }]}>MANs Tracker v1.2.4 · Built with love</Text>
         </View>
 
-        {/* Time Picker Modal */}
-        <Modal visible={isTimeModalVisible} transparent animationType="fade">
-          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' }}>
-            <View style={{ backgroundColor: colors.surface, width: '80%', borderRadius: 24, padding: 24, borderWidth: 1, borderColor: colors.border }}>
-              <Text style={[typography.headingMedium, { color: colors.text, marginBottom: 20 }]}>Set Reminder Time</Text>
-
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 25 }}>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ color: colors.textSecondary, marginBottom: 8, fontSize: 12 }}>Hour (0-23)</Text>
-                  <TextInput
-                    style={{ backgroundColor: colors.bg, color: colors.text, padding: 15, borderRadius: 12, fontSize: 18, textAlign: 'center' }}
-                    value={remindTime.hour}
-                    onChangeText={(t) => setRemindTime(prev => ({ ...prev, hour: t }))}
-                    keyboardType="numeric"
-                    maxLength={2}
-                  />
-                </View>
-                <Text style={{ fontSize: 24, color: colors.text, marginHorizontal: 15, marginTop: 20 }}>:</Text>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ color: colors.textSecondary, marginBottom: 8, fontSize: 12 }}>Minute (0-59)</Text>
-                  <TextInput
-                    style={{ backgroundColor: colors.bg, color: colors.text, padding: 15, borderRadius: 12, fontSize: 18, textAlign: 'center' }}
-                    value={remindTime.minute}
-                    onChangeText={(t) => setRemindTime(prev => ({ ...prev, minute: t }))}
-                    keyboardType="numeric"
-                    maxLength={2}
-                  />
-                </View>
-              </View>
-
-              <View style={{ flexDirection: 'row', gap: 12 }}>
-                <TouchableOpacity
-                  onPress={() => setTimeModalVisible(false)}
-                  style={{ flex: 1, padding: 16, borderRadius: 14, backgroundColor: isDark ? '#1C1C1E' : '#F5F5F7', alignItems: 'center' }}
-                >
-                  <Text style={{ color: colors.textSecondary }}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={handleSetTime}
-                  style={{ flex: 1, padding: 16, borderRadius: 14, backgroundColor: colors.accent, alignItems: 'center' }}
-                >
-                  <Text style={{ color: '#FFF', fontWeight: 'bold' }}>Save</Text>
-                </TouchableOpacity>
-              </View>
-
-              <TouchableOpacity
-                onPress={async () => {
-                  const isExpoGo = Constants.appOwnership === 'expo';
-                  if (!isExpoGo) {
-                    try {
-                      const notifee = require('@notifee/react-native').default;
-                      const { AndroidImportance } = require('@notifee/react-native');
-                      await notifee.requestPermission();
-                      const channelId = await notifee.createChannel({
-                        id: 'test',
-                        name: 'Test Notifications',
-                        importance: AndroidImportance.HIGH
-                      });
-                      await notifee.displayNotification({
-                        title: 'Test Notification 🔔',
-                        body: 'Success! Notifications are working on your device.',
-                        android: {
-                          channelId,
-                          importance: AndroidImportance.HIGH,
-                          pressAction: { id: 'default' }
-                        },
-                      });
-                    } catch (e) {
-                      NativeAlert.alert('Error', 'Could not send test notification.');
-                    }
-                  } else {
-                    NativeAlert.alert('Not Supported', 'Test notifications only work in the installed build, not Expo Go.');
-                  }
-                }}
-                style={{ marginTop: 16, padding: 12, borderRadius: 14, borderWidth: 1, borderColor: colors.border, alignItems: 'center' }}
-              >
-                <Text style={{ color: colors.textSecondary, fontSize: 13, fontWeight: '500' }}>Send Test Notification Now</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
-
         <View style={{ height: 120 }} />
       </ScrollView>
     </View>
+
   );
 }
 
@@ -318,4 +277,11 @@ const s = StyleSheet.create({
   toggleKnobActive: { alignSelf: 'flex-end' },
 
   themeIconBtn: { width: 32, height: 32, borderRadius: 10, borderWidth: 1, justifyContent: 'center', alignItems: 'center' },
+  debugSection: { paddingHorizontal: 16, marginTop: 24 },
+  debugTitle: { fontFamily: 'Inter_700Bold', fontSize: 16, marginBottom: 12 },
+  debugCard: { padding: 16, borderRadius: 18, borderWidth: 1 },
+  debugSubtitle: { fontFamily: 'Inter_600SemiBold', fontSize: 13, marginBottom: 10 },
+  debugInput: { padding: 12, borderRadius: 12, borderWidth: 1, fontFamily: 'Inter_600SemiBold' },
+  debugHint: { fontSize: 11, color: '#8E8E93', marginTop: 8, textAlign: 'center' },
 });
+

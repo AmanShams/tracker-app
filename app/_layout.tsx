@@ -17,9 +17,12 @@ import { BudgetProvider } from '../store/budgetStore';
 import { CategoryProvider } from '../store/categoryStore';
 import { TransactionProvider } from '../store/transactionStore';
 import { SavingsProvider } from '../store/savingsStore';
+import { ReminderProvider } from '../store/reminderStore';
 import { useThemeStore } from '../store/themeStore';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 // import { scheduleExpenseNotification } from '../notifications/scheduleExpenseNotification';
+import { scheduleWeeklySummary } from '../notifications/scheduleWeeklySummary';
+
 // import notifee from '@notifee/react-native';
 // import { handleExpenseReply } from '../notifications/notificationReplyHandler';
 
@@ -70,6 +73,8 @@ export default function RootLayout() {
           const { handleExpenseReply } = require('../notifications/notificationReplyHandler');
 
           scheduleExpenseNotification({ hour: 20, minute: 0 });
+          scheduleWeeklySummary();
+
           // Handle foreground events
           const unsubscribe = notifee.onForegroundEvent(async (event: any) => {
             await handleExpenseReply(event);
@@ -89,8 +94,9 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SavingsProvider>
-        <BudgetProvider>
-          <CategoryProvider>
+        <ReminderProvider>
+          <BudgetProvider>
+            <CategoryProvider>
             <TransactionProvider>
               <ThemeProvider value={theme}>
                 <Stack>
@@ -99,13 +105,19 @@ export default function RootLayout() {
                   <Stack.Screen name="set-budget" options={{ presentation: 'modal' }} />
                   <Stack.Screen name="create-category" options={{ presentation: 'modal' }} />
                   <Stack.Screen name="add-transaction" options={{ presentation: 'modal' }} />
+                  <Stack.Screen name="reminders" options={{ title: 'Reminders' }} />
+                  <Stack.Screen name="edit-reminder" options={{ title: 'Set Reminder' }} />
                 </Stack>
+
                 <StatusBar style={isDark ? "light" : "dark"} />
               </ThemeProvider>
             </TransactionProvider>
           </CategoryProvider>
         </BudgetProvider>
+      </ReminderProvider>
       </SavingsProvider>
+
+
     </GestureHandlerRootView>
   );
 }

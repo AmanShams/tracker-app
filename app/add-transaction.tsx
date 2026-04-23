@@ -167,7 +167,12 @@ export default function AddTransactionScreen() {
       <FormHeader title={title} />
 
       <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-        
+        {selectedCategory?.name === 'From Notifications' && (
+          <View style={[s.infoBox, { backgroundColor: colors.accent + '15', borderColor: colors.accent + '30' }]}>
+            <Ionicons name="information-circle-outline" size={18} color={colors.accent} />
+            <Text style={[s.infoText, { color: colors.text }]}>This transaction was added via notification. Please select a proper category below.</Text>
+          </View>
+        )}
         {/* Name */}
         <View style={[s.field, { borderBottomColor: isDark ? '#3A3A3C' : '#D1D1D6' }]}>
           <Text style={[s.label, { color: colors.textSecondary }]}>Name</Text>
@@ -345,8 +350,11 @@ const s = StyleSheet.create({
   input: { fontFamily: 'Inter_600SemiBold', fontSize: 16, paddingVertical: 8, letterSpacing: -0.2 },
   amountInput: { fontFamily: 'Inter_700Bold', fontSize: 32, paddingVertical: 10, letterSpacing: -1 },
   textArea: { fontFamily: 'Inter_400Regular', fontSize: 15, minHeight: 60, paddingVertical: 8 },
+  infoBox: { flexDirection: 'row', alignItems: 'center', padding: 12, borderRadius: 12, borderWidth: 1, marginBottom: 16, gap: 10 },
+  infoText: { fontFamily: 'Inter_500Medium', fontSize: 12, flex: 1, lineHeight: 16 },
   
   categoryScroll: { paddingVertical: 4, gap: 6 },
+
   catChip: { flexDirection: 'row', alignItems: 'center', paddingVertical: 6, paddingHorizontal: 10, borderRadius: 12, borderWidth: 1, borderColor: 'transparent' },
   readOnlyChip: { opacity: 0.9 },
   catIcon: { width: 22, height: 22, borderRadius: 7, justifyContent: 'center', alignItems: 'center', marginRight: 8 },

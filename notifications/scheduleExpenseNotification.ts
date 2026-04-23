@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 
-export const scheduleExpenseNotification = async (time: { hour: number; minute: number }) => {
+export const scheduleExpenseNotification = async (reminder: { id: string, hour: number; minute: number, categoryId?: string }) => {
   if (Platform.OS === 'web') return;
 
   try {
@@ -19,8 +19,8 @@ export const scheduleExpenseNotification = async (time: { hour: number; minute: 
 
     // Schedule local notification
     const date = new Date(Date.now());
-    date.setHours(time.hour);
-    date.setMinutes(time.minute);
+    date.setHours(reminder.hour);
+    date.setMinutes(reminder.minute);
     date.setSeconds(0);
 
     // If the time has already passed for today, schedule it for tomorrow
@@ -36,19 +36,23 @@ export const scheduleExpenseNotification = async (time: { hour: number; minute: 
 
     await notifee.createTriggerNotification(
       {
-        title: 'Add Expense',
-        body: 'Type: name amount category notes',
+        id: reminder.id,
+        title: 'Quick Add Expense',
+        body: 'Type: Name Amount (e.g. Lunch 500)',
+        data: {
+          categoryId: reminder.categoryId,
+        },
         android: {
           channelId,
           importance: AndroidImportance.HIGH,
           actions: [
             {
-              title: 'Send',
+              title: 'Add',
               pressAction: {
                 id: 'reply',
               },
               input: {
-                placeholder: 'Ali 500 food lunch...',
+                placeholder: 'e.g. Pizza 500',
                 allowFreeFormInput: true,
               },
             },

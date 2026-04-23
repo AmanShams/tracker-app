@@ -25,7 +25,9 @@ interface TransactionContextType {
   addTransaction: (tx: Omit<Transaction, 'id'>) => void;
   updateTransaction: (tx: Transaction) => void;
   deleteTransaction: (id: string) => void;
+  refreshTransactions: () => Promise<void>;
 }
+
 
 const TransactionContext = createContext<TransactionContextType | undefined>(undefined);
 
@@ -34,56 +36,40 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
   const [balance, setBalance] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
 
+  const refreshTransactions = async () => {
+    try {
+      const storedTransactions = await AsyncStorage.getItem(STORAGE_KEY);
+      let parsedTransactions: Transaction[] = [];
+      if (storedTransactions) {
+        const rawTransactions = JSON.parse(storedTransactions);
+        
+        parsedTransactions = rawTransactions.map((tx: any) => ({
+          ...tx,
+          amount: Number(tx.amount) || 0,
+          date: String(tx.date || ''),
+        }));
+
+        setTransactions(parsedTransactions);
+      }
+      
+      const storedBalance = await AsyncStorage.getItem('balance_data');
+      let parsedBalance = Number(storedBalance);
+      if (isNaN(parsedBalance) || storedBalance === null) {
+        parsedBalance = parsedTransactions.reduce((acc, tx) => acc + (tx.type === 'income' ? tx.amount : -tx.amount), 0);
+      }
+      setBalance(parsedBalance);
+    } catch (e) {
+      console.error('Failed to load transactions', e);
+    } finally {
+      setIsLoaded(true);
+    }
+  };
+
   // Load from AsyncStorage
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const storedTransactions = await AsyncStorage.getItem(STORAGE_KEY);
-        let parsedTransactions: Transaction[] = [];
-        if (storedTransactions) {
-          const rawTransactions = JSON.parse(storedTransactions);
-          
-          // Data Migration & Sanitization
-          parsedTransactions = rawTransactions.map((tx: any) => {
-            let cleanDate = tx.date;
-            // If date is in "MMM DD, 'YY" format, try to convert to ISO
-            if (tx.date && tx.date.includes(',')) {
-              try {
-                // Remove the ' if present
-                const parts = tx.date.replace("'", "").split(/[ ,]+/);
-                if (parts.length >= 3) {
-                  // This is a rough heuristic but better than crashing
-                  // "Mar 16 26" -> dayjs should handle it if correctly formatted
-                }
-              } catch(e) {}
-            }
-
-            return {
-              ...tx,
-              amount: Number(tx.amount) || 0, // Force number
-              // We'll trust the display format for now but ensure it's a string
-              date: String(tx.date || ''),
-            };
-          });
-
-          setTransactions(parsedTransactions);
-        }
-        
-        const storedBalance = await AsyncStorage.getItem('balance_data');
-        let parsedBalance = Number(storedBalance);
-        if (isNaN(parsedBalance) || storedBalance === null) {
-          // Recalculate from clean transactions
-          parsedBalance = parsedTransactions.reduce((acc, tx) => acc + (tx.type === 'income' ? tx.amount : -tx.amount), 0);
-        }
-        setBalance(parsedBalance);
-      } catch (e) {
-        console.error('Failed to load transactions', e);
-      } finally {
-        setIsLoaded(true);
-      }
-    };
-    loadData();
+    refreshTransactions();
   }, []);
+
 
   // Save to AsyncStorage
   useEffect(() => {
@@ -139,10 +125,11 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
   };
 
   return (
-    <TransactionContext.Provider value={{ transactions, balance, addTransaction, updateTransaction, deleteTransaction }}>
+    <TransactionContext.Provider value={{ transactions, balance, addTransaction, updateTransaction, deleteTransaction, refreshTransactions }}>
       {children}
     </TransactionContext.Provider>
   );
+
 }
 
 export function useTransactions() {

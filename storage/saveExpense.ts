@@ -6,12 +6,23 @@ const STORAGE_KEY = 'transactions_data';
 const BALANCE_KEY = 'balance_data';
 
 // Helper to map typed category to valid app category details
-export const getCategoryDetails = (categoryStr: string) => {
-  const cat = categoryStr.toLowerCase();
-  if (cat.includes('food') || cat.includes('eat') || cat.includes('lunch')) {
+export const getCategoryDetails = (cat?: string, catId?: string) => {
+  // If we have a specific category ID, use that
+  if (catId) {
+     return { name: 'Linked Category', icon: 'link-outline', color: '#6366F1', id: catId };
+  }
+
+  if (!cat || cat.toLowerCase() === 'uncategorized' || cat.toLowerCase() === 'from notifications') {
+    return { name: 'From Notifications', icon: 'notifications-outline', color: '#6366F1' }; // Indigo color
+  }
+
+  const categoryStr = cat.toLowerCase();
+
+  if (categoryStr.includes('food') || categoryStr.includes('eat') || categoryStr.includes('lunch')) {
     return { name: 'Food & Dining', icon: 'fast-food-outline', color: '#F59E0B' };
   }
-  if (cat.includes('bill') || cat.includes('utilit')) {
+
+  if (categoryStr.includes('bill') || categoryStr.includes('utilit')) {
     return { name: 'Bills', icon: 'receipt-outline', color: '#3B82F6' };
   }
   if (cat.includes('transport') || cat.includes('fuel') || cat.includes('uber')) {
@@ -41,7 +52,7 @@ export const saveExpense = async (expense: Expense): Promise<void> => {
     const transactions: Transaction[] = existingTransactionsStr ? JSON.parse(existingTransactionsStr) : [];
     const balance = existingBalanceStr ? Number(existingBalanceStr) : 0;
     
-    const catDetails = getCategoryDetails(expense.category);
+    const catDetails = getCategoryDetails(expense.category, expense.categoryId);
     
     // Convert Expense to Transaction
     const newTransaction: Transaction = {
