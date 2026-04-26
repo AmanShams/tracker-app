@@ -26,6 +26,9 @@ export const parseExpenseInput = (text: string): Expense | null => {
   const amountPart = parts.find(p => !isNaN(Number(p)));
   const amountIdx = parts.findIndex(p => p === amountPart);
 
+  let amountStr = '';
+  let name = '';
+
   if (amountPart && amountIdx !== -1) {
     amountStr = amountPart;
     // Everything else is the name

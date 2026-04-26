@@ -23,6 +23,12 @@ export default function RemindersScreen() {
   const router = useRouter();
   const { reminders, toggleReminder } = useReminders();
   const { isDark, colors } = useThemeStore();
+  const [pinnedHeaderH, setPinnedHeaderH] = React.useState(130);
+
+  const onPinnedLayout = React.useCallback((event: any) => {
+    const { height } = event.nativeEvent.layout;
+    if (height > 0) setPinnedHeaderH(height);
+  }, []);
 
   const genericReminders = reminders.filter(r => r.type === 'generic');
   const summaryReminders = reminders.filter(r => r.type !== 'generic');
@@ -88,16 +94,25 @@ export default function RemindersScreen() {
   };
 
   return (
-    <SafeAreaView style={[s.root, { backgroundColor: colors.bg }]}>
+    <View style={[s.root, { backgroundColor: colors.bg }]}>
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+      
+      <View style={[s.pinnedHeader, { backgroundColor: colors.bg }]} onLayout={onPinnedLayout}>
+        <SafeAreaView>
+          <View style={s.headerContentPadded}>
+            <MainHeader />
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={[typography.headingLarge, { fontSize: 28, lineHeight: 34, color: colors.text }]}>Reminders</Text>
+            </View>
+          </View>
+        </SafeAreaView>
+      </View>
 
-      <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
-        <MainHeader />
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-          <Text style={[typography.headingLarge, { fontSize: 28, color: colors.text }]}>Reminders</Text>
-        </View>
-        <View style={{ height: 4 }} />
+      <ScrollView 
+        contentContainerStyle={[s.scrollContent, { paddingTop: pinnedHeaderH }]} 
+        showsVerticalScrollIndicator={false}
+      >
         
         {/* 4 Generic Cards */}
         <View style={s.grid}>
@@ -131,13 +146,15 @@ export default function RemindersScreen() {
 
         <View style={{ height: 40 }} />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const s = StyleSheet.create({
   root: { flex: 1 },
-  scrollContent: { padding: 16 },
+  scrollContent: { padding: 16, paddingBottom: 40 },
+  pinnedHeader: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 100 },
+  headerContentPadded: { paddingHorizontal: 16, paddingBottom: 15, paddingTop: Platform.OS === 'web' ? 10 : 0 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   card: { 
     width: '48%', 

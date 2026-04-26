@@ -29,9 +29,8 @@ export const typography = {
     fontSize: 20,
     fontWeight: '600' as const,
     letterSpacing: -1.5, // Tight tracking
-    lineHeight: 20,
+    lineHeight: 28,
     color: '#111111',
-    marginBottom: 10
   },
 
   /** Card and sub-section titles — "Invest", "Shared" */

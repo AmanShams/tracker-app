@@ -1,7 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
+  LayoutChangeEvent,
+  Platform,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -11,6 +13,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import { MainHeader } from '../components/main-header';
 
 import { typography } from '@/constants/typography';
 import { useCategories } from '../store/categoryStore';
@@ -37,6 +40,12 @@ export default function EditReminderScreen() {
   const [categoryId, setCategoryId] = useState<string | undefined>(undefined);
   const [dateOfMonth, setDateOfMonth] = useState(1);
   const [isRecurring, setIsRecurring] = useState(true);
+  const [pinnedHeaderH, setPinnedHeaderH] = useState(130);
+
+  const onPinnedLayout = useCallback((event: LayoutChangeEvent) => {
+    const { height } = event.nativeEvent.layout;
+    if (height > 0) setPinnedHeaderH(height);
+  }, []);
 
   useEffect(() => {
     if (reminder) {
@@ -83,30 +92,25 @@ export default function EditReminderScreen() {
   return (
     <View style={[s.root, { backgroundColor: colors.bg }]}>
       <Stack.Screen options={{
-        title: 'Edit Reminder',
-        headerShown: true,
-        headerTintColor: colors.text,
+        headerShown: false,
       }} />
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
 
-      <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={[s.pinnedHeader, { backgroundColor: colors.bg }]} onLayout={onPinnedLayout}>
-          <SafeAreaView>
-            <View style={s.headerContentPadded}>
-              <MainHeader actions={[{ icon: 'settings-outline' }]} />
-              <View style={s.titleRow}>
-                <Text style={[typography.headingLarge, { fontSize: 28, color: colors.text }]}>Categories</Text>
-                <TouchableOpacity
-                  // style={[s.addBtnHeader, { backgroundColor: isDark ? '#1C1C1E' : '#F5F5F7', borderColor: isDark ? '#2C2C2E' : '#E8E8ED' }]}
-                  activeOpacity={0.7}
-                  onPress={() => router.push('/create-category')}
-                >
-                  <Ionicons name="add" size={24} color={colors.text} />
-                </TouchableOpacity>
-              </View>
+      <View style={[s.pinnedHeader, { backgroundColor: colors.bg }]} onLayout={onPinnedLayout}>
+        <SafeAreaView>
+          <View style={s.headerContentPadded}>
+            <MainHeader actions={[{ icon: 'settings-outline' }]} />
+            <View style={s.titleRow}>
+              <Text style={[typography.headingLarge, { fontSize: 28, color: colors.text }]}>Reminders</Text>
             </View>
-          </SafeAreaView>
-        </View>
+          </View>
+        </SafeAreaView>
+      </View>
+
+      <ScrollView 
+        contentContainerStyle={[s.scrollContent, { paddingTop: pinnedHeaderH }]} 
+        showsVerticalScrollIndicator={false}
+      >
 
         {/* 1. Time Picker */}
         <View style={s.timeContainer}>
@@ -315,4 +319,7 @@ const s = StyleSheet.create({
 
   saveBtn: { paddingVertical: 18, borderRadius: 20, alignItems: 'center', marginTop: 20 },
   saveBtnText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
+  pinnedHeader: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 100 },
+  headerContentPadded: { paddingHorizontal: 16, paddingBottom: 5, paddingTop: Platform.OS === 'web' ? 10 : 0 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
 });

@@ -4,9 +4,8 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 dayjs.extend(customParseFormat);
 
 import React, { useMemo, useState } from 'react';
-import { ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { Platform, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { PieChart } from 'react-native-gifted-charts';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle, Defs, LinearGradient, Path, Stop, Line as SvgLine } from 'react-native-svg';
 import { MainHeader } from '../../components/main-header';
 import { useThemeStore } from '../../store/themeStore';
@@ -277,6 +276,12 @@ export default function ActivitiesScreen() {
   const { transactions } = useTransactions();
   const { isDark, colors } = useThemeStore();
   const [activeRange, setActiveRange] = useState<'W' | 'M' | 'Y' | 'A'>('M');
+  const [pinnedHeaderH, setPinnedHeaderH] = useState(130);
+
+  const onPinnedLayout = React.useCallback((event: any) => {
+    const { height } = event.nativeEvent.layout;
+    if (height > 0) setPinnedHeaderH(height);
+  }, []);
 
   const chartData = useMemo(() => {
     const now = dayjs();
@@ -388,12 +393,13 @@ export default function ActivitiesScreen() {
   return (
     <View style={[styles.root, { backgroundColor: colors.bg }]}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
-      <SafeAreaView edges={['top']} style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          <View style={styles.header}>
+      
+      <View style={[styles.pinnedHeader, { backgroundColor: colors.bg }]} onLayout={onPinnedLayout}>
+        <SafeAreaView>
+          <View style={styles.headerContentPadded}>
             <MainHeader />
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text style={[typography.headingLarge, { fontSize: 28, color: colors.text }]}>Activities</Text>
+              <Text style={[typography.headingLarge, { fontSize: 28, lineHeight: 34, color: colors.text }]}>Activities</Text>
 
               <View style={{ flexDirection: 'row', backgroundColor: isDark ? '#1C1C1E' : '#E5E5EA', borderRadius: 12, padding: 2 }}>
                 {[{ k: 'W', l: '7D' }, { k: 'M', l: '30D' }, { k: 'Y', l: '1Y' }, { k: 'A', l: 'All' }].map(f => (
@@ -419,6 +425,13 @@ export default function ActivitiesScreen() {
               </View>
             </View>
           </View>
+        </SafeAreaView>
+      </View>
+
+      <ScrollView 
+        contentContainerStyle={[styles.scrollContent, { paddingTop: pinnedHeaderH }]} 
+        showsVerticalScrollIndicator={false}
+      >
 
           <View style={[styles.summaryContainerSmall, { marginTop: 4, flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 5 }]}>
             <View style={styles.statBoxCompact}>
@@ -463,7 +476,6 @@ export default function ActivitiesScreen() {
 
           <View style={{ height: 100 }} />
         </ScrollView>
-      </SafeAreaView>
     </View>
   );
 }
@@ -484,4 +496,6 @@ const styles = StyleSheet.create({
   statValueLine: { flexDirection: 'row', alignItems: 'baseline' },
   statInt: { fontFamily: 'Inter_700Bold', fontSize: 32, fontWeight: '700', letterSpacing: -1, lineHeight: 38 },
   statDec: { fontFamily: 'Inter_400Regular', fontSize: 16, letterSpacing: -0.1, lineHeight: 38, marginLeft: 1 },
+  pinnedHeader: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 100 },
+  headerContentPadded: { paddingHorizontal: 16, paddingBottom: 15, paddingTop: Platform.OS === 'web' ? 10 : 0 },
 });

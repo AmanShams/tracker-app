@@ -106,7 +106,7 @@ export default function SavingsScreen() {
               actions={[{ icon: 'settings-outline' }]}
             />
             <View style={s.titleRow}>
-              <Text style={[typography.headingLarge, { fontSize: 28, color: colors.text }]}>Budgets</Text>
+              <Text style={[typography.headingLarge, { fontSize: 28, lineHeight: 34, color: colors.text }]}>Budgets</Text>
               <TouchableOpacity
                 // style={[s.addBtnHeader, { backgroundColor: isDark ? '#1C1C1E' : '#F5F5F7', borderColor: isDark ? '#2C2C2E' : '#E8E8ED' }]}
                 activeOpacity={0.7}

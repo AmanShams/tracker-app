@@ -29,7 +29,7 @@ export default function HistoryScreen() {
         <SafeAreaView>
           <View style={s.headerContentPadded}>
             <MainHeader actions={[{ icon: 'search-outline' }]} />
-            <Text style={[typography.headingLarge, { fontSize: 28, color: colors.text }]}>Transactions</Text>
+            <Text style={[typography.headingLarge, { fontSize: 28, lineHeight: 34, color: colors.text }]}>Transactions</Text>
           </View>
         </SafeAreaView>
       </View>
