@@ -41,7 +41,8 @@
           }
         }
       ],
-      "expo-font"
+      "expo-font",
+      "@notifee/react-native"
     ],
     "experiments": {
       "typedRoutes": true,
