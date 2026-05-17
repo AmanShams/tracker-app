@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { syncNotifications } from '../notifications/notificationScheduler';
 
 const STORAGE_KEY = 'reminders_data_v2';
 
@@ -65,6 +66,7 @@ export function ReminderProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (isLoaded) {
       AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(reminders));
+      syncNotifications(reminders);
     }
   }, [reminders, isLoaded]);
 

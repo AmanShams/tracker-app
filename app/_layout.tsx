@@ -56,12 +56,8 @@ function HydrationHandler({ children, fontsLoaded }: { children: React.ReactNode
       
       if (isNative && !isExpoGo) {
         try {
-          const { scheduleExpenseNotification } = require('../notifications/scheduleExpenseNotification');
           const notifee = require('@notifee/react-native').default;
           const { handleExpenseReply } = require('../notifications/notificationReplyHandler');
-
-          scheduleExpenseNotification({ hour: 20, minute: 0 });
-          scheduleWeeklySummary();
 
           // Handle foreground events
           const unsubscribe = notifee.onForegroundEvent(async (event: any) => {
