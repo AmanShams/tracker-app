@@ -14,6 +14,7 @@ import {
   View
 } from 'react-native';
 import { FormHeader } from '../components/form-header';
+import { typography } from '../constants/typography';
 import { CategoryType, useCategories } from '../store/categoryStore';
 import { useThemeStore } from '../store/themeStore';
 
@@ -93,20 +94,33 @@ export default function CreateCategoryScreen() {
       >
         <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
           <View style={styles.form}>
-            {/* Type Selector */}
-            <View style={[styles.typeToggleRow, { backgroundColor: isDark ? '#1C1C1E' : '#F2F2F7' }]}>
-              <TouchableOpacity
-                style={[styles.typeBtn, type === 'expense' && { backgroundColor: isDark ? '#2C2C2E' : '#FFFFFF' }]}
-                onPress={() => setType('expense')}
-              >
-                <Text style={[styles.typeBtnText, { color: colors.textSecondary }, type === 'expense' && { color: colors.text, fontFamily: 'Inter_600SemiBold' }]}>Expense</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.typeBtn, type === 'income' && { backgroundColor: isDark ? '#2C2C2E' : '#FFFFFF' }]}
-                onPress={() => setType('income')}
-              >
-                <Text style={[styles.typeBtnText, { color: colors.textSecondary }, type === 'income' && { color: colors.text, fontFamily: 'Inter_600SemiBold' }]}>Income</Text>
-              </TouchableOpacity>
+            {/* Type Selector (styled exactly like filter UI pills) */}
+            <View style={styles.filterPillsContainer}>
+              {['expense', 'income'].map((t) => {
+                const isActive = type === t;
+                const label = t.charAt(0).toUpperCase() + t.slice(1);
+                return (
+                  <TouchableOpacity
+                    key={t}
+                    onPress={() => setType(t as any)}
+                    activeOpacity={0.7}
+                    style={[
+                      styles.filterPill,
+                      { backgroundColor: colors.bg, borderColor: colors.border },
+                      isActive && { backgroundColor: colors.accent + '20', borderColor: colors.accent }
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        isActive ? typography.filterActive : typography.filterInactive,
+                        { color: isActive ? colors.accent : colors.textSecondary }
+                      ]}
+                    >
+                      {label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
 
             {/* Name Input */}
@@ -184,21 +198,17 @@ const styles = StyleSheet.create({
   form: {
     gap: 6,
   },
-  typeToggleRow: {
+  filterPillsContainer: {
     flexDirection: 'row',
-    borderRadius: 12,
-    padding: 2,
-    marginBottom: 2,
-  },
-  typeBtn: {
-    flex: 1,
-    paddingVertical: 10,
+    gap: 8,
     alignItems: 'center',
-    borderRadius: 8,
+    marginBottom: 12,
   },
-  typeBtnText: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 14,
+  filterPill: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
   },
   field: {
     width: '100%',

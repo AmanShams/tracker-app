@@ -17,7 +17,7 @@ export function FormHeader({ title }: FormHeaderProps) {
       {/* Title Row */}
       <View style={styles.titleRow}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Text style={[typography.headingLarge, { fontSize: 25, color: colors.text }]}>{title}</Text>
+          <Text style={[typography.headingLarge, { fontSize: 28, lineHeight: 34, color: colors.text }]}>{title}</Text>
           <TouchableOpacity
             activeOpacity={0.7}
             onPress={() => router.back()}

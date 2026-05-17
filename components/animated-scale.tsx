@@ -1,5 +1,5 @@
 import React from 'react';
-import { Animated, TouchableOpacity, StyleSheet, ViewStyle, View } from 'react-native';
+import { TouchableOpacity, ViewStyle } from 'react-native';
 
 interface AnimatedScaleProps {
   children: React.ReactNode;
@@ -8,8 +8,6 @@ interface AnimatedScaleProps {
 }
 
 export function AnimatedScale({ children, onPress, style }: AnimatedScaleProps) {
-  const scale = React.useRef(new Animated.Value(1)).current;
-
   return (
     <TouchableOpacity
       activeOpacity={0.7}

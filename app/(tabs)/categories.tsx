@@ -175,8 +175,6 @@ export default function CategoriesScreen() {
           title="Delete Category"
           message={`Delete "${deleteName}"? This action cannot be undone.`}
         />
-
-        <View style={{ height: 120 }} />
       </ScrollView>
     </View>
   );

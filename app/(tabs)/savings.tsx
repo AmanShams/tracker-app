@@ -189,8 +189,6 @@ export default function SavingsScreen() {
           title="Delete Budget"
           message={`Remove "${deleteName}"? Linked transactions will be unlinked.`}
         />
-
-        <View style={{ height: 120 }} />
       </ScrollView>
     </View>
   );

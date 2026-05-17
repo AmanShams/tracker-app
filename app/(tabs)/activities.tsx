@@ -4,7 +4,7 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 dayjs.extend(customParseFormat);
 
 import React, { useMemo, useState } from 'react';
-import { Platform, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { Platform, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { PieChart } from 'react-native-gifted-charts';
 import Svg, { Circle, Defs, LinearGradient, Path, Stop, Line as SvgLine } from 'react-native-svg';
 import { MainHeader } from '../../components/main-header';
@@ -200,7 +200,7 @@ function SpendingHeatmap({
 
   return (
     <View
-      style={{ marginTop: 24, paddingHorizontal: 5, width: '100%' }}
+      style={{ marginTop: 12, paddingHorizontal: 5, width: '100%' }}
     >
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
         <Text style={[typography.headingMedium, { color: colors.text, fontSize: 16 }]}>Financial Activity Heatmap</Text>
@@ -225,7 +225,7 @@ function SpendingHeatmap({
                 const isIncome = income > 0;
                 const isExpense = expense > 0;
 
-                let color = colors.red;
+                let color = isDark ? '#2C2C2E' : '#E5E5EA';
                 let ratio = 0;
                 if (isIncome) {
                   color = colors.green;
@@ -237,7 +237,7 @@ function SpendingHeatmap({
 
                 const opacity = (isIncome || isExpense)
                   ? 0.25 + (Math.min(ratio, 1) * 0.75)
-                  : (isDark ? 0.08 : 0.04);
+                  : 1.0;
 
                 return (
                   <View
@@ -370,16 +370,16 @@ export default function ActivitiesScreen() {
     return (
       <View style={[styles.chartCard, style]}>
         <View style={{ alignItems: 'center' }}>
-          <PieChart donut showGradient sectionAutoFocus radius={60} innerRadius={48} innerCircleColor={colors.bg} data={data.donutData} centerLabelComponent={() => (
+          <PieChart donut showGradient isAnimated={false} radius={60} innerRadius={48} innerCircleColor={colors.bg} data={data.donutData} centerLabelComponent={() => (
             <View style={{ alignItems: 'center' }}>
               <Text style={[typography.bodySmall, { color: colors.textSecondary, fontSize: 9 }]}>{type === 'income' ? 'Earned' : 'Spent'}</Text>
               <Text style={[typography.statAmount, { color: colors.text, fontSize: 12 }]}>Rs {data.total.toFixed(0)}</Text>
             </View>
           )} />
         </View>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingVertical: 4, gap: 2 }} style={{ marginTop: 12 }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingVertical: 4, gap: 2 }} style={{ marginTop: 5 }}>
           {data.items.map((item: any, index: number) => (
-            <View key={index} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: isDark ? '#1C1C1E' : '#F2F2F7', paddingHorizontal: 4, paddingVertical: 4, borderRadius: 16 }}>
+            <View key={index} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: "centre", backgroundColor: isDark ? '#1C1C1E' : '#F2F2F7', paddingHorizontal: 4, paddingVertical: 4, borderRadius: 16 }}>
               <View style={{ backgroundColor: item.color, width: 6, height: 6, borderRadius: 3, marginRight: 4 }} />
               <Text style={[typography.caption, { color: colors.text, fontSize: 10, marginRight: 4 }]} numberOfLines={1}>{item.label}</Text>
               <Text style={[typography.caption, { color: colors.textSecondary, fontSize: 10, fontWeight: 'bold' }]}>{item.percentage}%</Text>
@@ -393,7 +393,7 @@ export default function ActivitiesScreen() {
   return (
     <View style={[styles.root, { backgroundColor: colors.bg }]}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
-      
+
       <View style={[styles.pinnedHeader, { backgroundColor: colors.bg }]} onLayout={onPinnedLayout}>
         <SafeAreaView>
           <View style={styles.headerContentPadded}>
@@ -401,26 +401,35 @@ export default function ActivitiesScreen() {
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
               <Text style={[typography.headingLarge, { fontSize: 28, lineHeight: 34, color: colors.text }]}>Activities</Text>
 
-              <View style={{ flexDirection: 'row', backgroundColor: isDark ? '#1C1C1E' : '#E5E5EA', borderRadius: 12, padding: 2 }}>
+              <View style={{ flexDirection: 'row', backgroundColor: isDark ? '#1C1C1E' : '#E5E5EA', borderRadius: 14, padding: 3 }}>
                 {[{ k: 'W', l: '7D' }, { k: 'M', l: '30D' }, { k: 'Y', l: '1Y' }, { k: 'A', l: 'All' }].map(f => (
-                  <Text
+                  <TouchableOpacity
                     key={f.k}
+                    activeOpacity={0.7}
                     onPress={() => setActiveRange(f.k as any)}
-                    style={[
-                      typography.caption,
-                      {
-                        paddingHorizontal: 10,
-                        paddingVertical: 4,
-                        borderRadius: 12,
-                        backgroundColor: activeRange === f.k ? (isDark ? '#2C2C2E' : '#FFFFFF') : 'transparent',
-                        color: activeRange === f.k ? colors.text : colors.textSecondary,
-                        fontSize: 10,
-                        fontWeight: activeRange === f.k ? '600' : '400'
-                      }
-                    ]}
+                    style={{
+                      paddingHorizontal: 14,
+                      paddingVertical: 7,
+                      borderRadius: 11,
+                      backgroundColor: activeRange === f.k ? (isDark ? '#2C2C2E' : '#FFFFFF') : 'transparent',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}
                   >
-                    {f.l}
-                  </Text>
+                    <Text
+                      style={[
+                        typography.caption,
+                        {
+                          color: activeRange === f.k ? colors.text : colors.textSecondary,
+                          fontSize: 12,
+                          fontFamily: activeRange === f.k ? 'Inter_600SemiBold' : 'Inter_400Regular',
+                          fontWeight: activeRange === f.k ? '600' : '400'
+                        }
+                      ]}
+                    >
+                      {f.l}
+                    </Text>
+                  </TouchableOpacity>
                 ))}
               </View>
             </View>
@@ -428,54 +437,52 @@ export default function ActivitiesScreen() {
         </SafeAreaView>
       </View>
 
-      <ScrollView 
-        contentContainerStyle={[styles.scrollContent, { paddingTop: pinnedHeaderH }]} 
+      <ScrollView
+        contentContainerStyle={[styles.scrollContent, { paddingTop: pinnedHeaderH }]}
         showsVerticalScrollIndicator={false}
       >
 
-          <View style={[styles.summaryContainerSmall, { marginTop: 4, flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 5 }]}>
-            <View style={styles.statBoxCompact}>
-              <Text style={styles.statLabelSmall}>{activeRange === 'A' ? 'Total Income' : 'Period Income'}</Text>
-              <View style={styles.statValueLine}>
-                <Text style={[styles.statInt, { color: colors.text }]}>{totalInc.whole}</Text>
-                <Text style={[styles.statDec, { color: colors.textTertiary }]}>.{totalInc.dec}</Text>
-              </View>
-            </View>
-            <View style={[styles.vDivider, { backgroundColor: colors.separator, width: 1 }]} />
-            <View style={styles.statBoxCompact}>
-              <Text style={styles.statLabelSmall}>{activeRange === 'A' ? 'Total Expense' : 'Period Expense'}</Text>
-              <View style={styles.statValueLine}>
-                <Text style={[styles.statInt, { color: colors.text }]}>{totalExp.whole}</Text>
-                <Text style={[styles.statDec, { color: colors.textTertiary }]}>.{totalExp.dec}</Text>
-              </View>
+        <View style={[styles.summaryContainerSmall, { marginTop: 4, flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 5 }]}>
+          <View style={styles.statBoxCompact}>
+            <Text style={styles.statLabelSmall}>{activeRange === 'A' ? 'Total Income' : 'Period Income'}</Text>
+            <View style={styles.statValueLine}>
+              <Text style={[styles.statInt, { color: colors.text }]}>{totalInc.whole}</Text>
+              <Text style={[styles.statDec, { color: colors.textTertiary }]}>.{totalInc.dec}</Text>
             </View>
           </View>
-
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 10, marginTop: 16 }}>
-            <CategoryChartBlock style={{ flex: 1, padding: 4 }} data={categorizedData.income} type="income" />
-            <CategoryChartBlock style={{ flex: 1, padding: 4 }} data={categorizedData.expense} type="expense" />
-          </View>
-
-          <View style={{ marginTop: 16, paddingHorizontal: 5 }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-              <View>
-                <Text style={[typography.headingMedium, { color: colors.text, fontSize: 16 }]}>Cash Flow</Text>
-              </View>
+          <View style={[styles.vDivider, { backgroundColor: colors.separator, width: 1 }]} />
+          <View style={styles.statBoxCompact}>
+            <Text style={styles.statLabelSmall}>{activeRange === 'A' ? 'Total Expense' : 'Period Expense'}</Text>
+            <View style={styles.statValueLine}>
+              <Text style={[styles.statInt, { color: colors.text }]}>{totalExp.whole}</Text>
+              <Text style={[styles.statDec, { color: colors.textTertiary }]}>.{totalExp.dec}</Text>
             </View>
+          </View>
+        </View>
 
-            {chartData.balancePoints.length > 1 ? (
-              <BicolorAreaChart data={chartData.balancePoints} green={colors.green} red={colors.red} textColor={colors.textSecondary} separatorColor={colors.separator} isDark={isDark} />
-            ) : (
-              <View style={[styles.emptyContainer, { height: 100 }]}><Text style={[typography.body, { color: colors.textSecondary, fontSize: 12 }]}>No transactions found for this period.</Text></View>
-            )}
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 10, marginTop: 0 }}>
+          <CategoryChartBlock style={{ flex: 1, padding: 4 }} data={categorizedData.income} type="income" />
+          <CategoryChartBlock style={{ flex: 1, padding: 4 }} data={categorizedData.expense} type="expense" />
+        </View>
+
+        <View style={{ marginTop: 10, paddingHorizontal: 5 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <View>
+              <Text style={[typography.headingMedium, { color: colors.text, fontSize: 16 }]}>Cash Flow</Text>
+            </View>
           </View>
 
-          <View style={{ marginTop: -8 }}>
-            <SpendingHeatmap transactions={transactions} colors={colors} isDark={isDark} activeRange={activeRange} />
-          </View>
+          {chartData.balancePoints.length > 1 ? (
+            <BicolorAreaChart data={chartData.balancePoints} green={colors.green} red={colors.red} textColor={colors.textSecondary} separatorColor={colors.separator} isDark={isDark} />
+          ) : (
+            <View style={[styles.emptyContainer, { height: 100 }]}><Text style={[typography.body, { color: colors.textSecondary, fontSize: 12 }]}>No transactions found for this period.</Text></View>
+          )}
+        </View>
 
-          <View style={{ height: 100 }} />
-        </ScrollView>
+        <View style={{ marginTop: -8 }}>
+          <SpendingHeatmap transactions={transactions} colors={colors} isDark={isDark} activeRange={activeRange} />
+        </View>
+      </ScrollView>
     </View>
   );
 }
@@ -491,8 +498,8 @@ const styles = StyleSheet.create({
   // Summary Stats
   summaryContainerSmall: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 4, marginBottom: 0 },
   vDivider: { width: 1, height: 40, marginHorizontal: 12 },
-  statBoxCompact: { flex: 1 },
-  statLabelSmall: { fontFamily: 'Inter_400Regular', fontSize: 13, color: '#8E8E93', letterSpacing: -0.2, marginBottom: -2 },
+  statBoxCompact: { flex: 1, alignItems: 'center' },
+  statLabelSmall: { fontFamily: 'Inter_400Regular', fontSize: 13, color: '#8E8E93', letterSpacing: -0.2, marginBottom: -2, textAlign: 'center' },
   statValueLine: { flexDirection: 'row', alignItems: 'baseline' },
   statInt: { fontFamily: 'Inter_700Bold', fontSize: 32, fontWeight: '700', letterSpacing: -1, lineHeight: 38 },
   statDec: { fontFamily: 'Inter_400Regular', fontSize: 16, letterSpacing: -0.1, lineHeight: 38, marginLeft: 1 },

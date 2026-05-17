@@ -216,8 +216,6 @@ export default function ProfileScreen() {
           </TouchableOpacity>
           <Text style={[s.appInfo, { color: colors.textTertiary }]}>MANs Tracker v1.2.4 · Built with love</Text>
         </View>
-
-        <View style={{ height: 120 }} />
       </ScrollView>
     </View>
 
