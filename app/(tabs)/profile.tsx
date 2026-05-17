@@ -14,11 +14,9 @@ import {
 } from 'react-native';
 
 import { typography } from '@/constants/typography';
-import Constants from 'expo-constants';
 import { Alert, TextInput } from 'react-native';
 import { MainHeader } from '../../components/main-header';
 import { handleExpenseReply } from '../../notifications/notificationReplyHandler';
-import { scheduleExpenseNotification } from '../../notifications/scheduleExpenseNotification';
 import { useBudgets } from '../../store/budgetStore';
 import { useThemeStore } from '../../store/themeStore';
 import { useTransactions } from '../../store/transactionStore';
@@ -53,31 +51,16 @@ export default function ProfileScreen() {
   type SettingItem = { id: string; title: string; icon: string; isToggle?: boolean; isThemeRow?: boolean; };
 
   const settings: SettingItem[] = [
-    { id: '1', title: 'Personal Info', icon: 'person-outline' },
-    { id: '2', title: 'Security', icon: 'shield-checkmark-outline' },
+    // { id: '1', title: 'Personal Info', icon: 'person-outline' },
+    // { id: '2', title: 'Security', icon: 'shield-checkmark-outline' },
     // { id: 'dark_mode', title: `Theme: ${getThemeDisplay()}`, icon: isDark ? 'moon' : 'moon-outline', isToggle: true },
     { id: 'reminders', title: 'Reminders', icon: 'notifications-outline' },
-    { id: '3', title: 'Payment Methods', icon: 'card-outline' },
-    { id: '4', title: 'Data & Privacy', icon: 'finger-print-outline' },
-    { id: '5', title: 'Help & Support', icon: 'help-circle-outline' },
+    { id: 'import_json', title: 'Import Transactions (JSON)', icon: 'download-outline' },
+    // { id: '3', title: 'Payment Methods', icon: 'card-outline' },
+    // { id: '4', title: 'Data & Privacy', icon: 'finger-print-outline' },
+    // { id: '5', title: 'Help & Support', icon: 'help-circle-outline' },
   ];
 
-  const handleSetTime = async () => {
-    const h = parseInt(remindTime.hour);
-    const m = parseInt(remindTime.minute);
-
-    if (isNaN(h) || isNaN(m) || h < 0 || h > 23 || m < 0 || m > 59) {
-      NativeAlert.alert('Invalid Time', 'Please enter a valid hour (0-23) and minute (0-59).');
-      return;
-    }
-
-    const isExpoGo = Constants.appOwnership === 'expo';
-    if (Platform.OS !== 'web' && !isExpoGo) {
-      await scheduleExpenseNotification({ hour: h, minute: m });
-    }
-    setTimeModalVisible(false);
-    NativeAlert.alert('Success', `Daily reminder set for ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`);
-  };
 
   return (
     <View style={[s.root, { backgroundColor: colors.bg }]}>
@@ -92,7 +75,7 @@ export default function ProfileScreen() {
               actions={[{ icon: 'notifications-outline' }]}
             />
             <View style={s.titleRow}>
-              <Text style={[typography.headingLarge, { fontSize: 28, color: colors.text }]}>Profile</Text>
+              <Text style={[typography.headingLarge, { fontSize: 28, lineHeight: 34, color: colors.text }]}>Profile</Text>
               <TouchableOpacity
                 //  style={[s.addBtnHeader, { backgroundColor: isDark ? '#1C1C1E' : '#F5F5F7', borderColor: isDark ? '#2C2C2E' : '#E8E8ED' }]} 
                 activeOpacity={0.7}
@@ -140,6 +123,8 @@ export default function ProfileScreen() {
                   console.log('Clicked setting:', item.id);
                   if (item.id === 'reminders') {
                     router.push('/reminders');
+                  } else if (item.id === 'import_json') {
+                    router.push('/import-json');
                   } else if (item.isToggle) {
                     toggleTheme();
                   }

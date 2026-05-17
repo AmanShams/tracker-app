@@ -1,10 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useIsFocused } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
-  Animated,
   Dimensions,
+  Image,
   LayoutChangeEvent,
   Platform,
   SafeAreaView,
@@ -13,7 +13,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 
 import { typography } from '@/constants/typography';
@@ -23,7 +23,6 @@ import { TransactionList } from '../../components/transaction-list';
 import { Budget, useBudgets } from '../../store/budgetStore';
 import { useThemeStore } from '../../store/themeStore';
 import { useTransactions } from '../../store/transactionStore';
-import { TextInput } from 'react-native';
 
 const SCREEN_H = Dimensions.get('window').height;
 
@@ -34,26 +33,25 @@ const FILTERS = ['All', 'Expense', 'Income'];
 // ─── Balance Card ─────────────────────────────────────────────────────────────
 function BalanceCard() {
   const { balance } = useTransactions();
-  const { colors } = useThemeStore();
+  const { colors, isDark } = useThemeStore();
 
   const balanceStr = balance.toFixed(2);
   const [intPartRaw, decPart] = balanceStr.split('.');
   const intPart = intPartRaw.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 
   return (
-    <View style={s.balanceBlock}>
-      <View style={s.balanceLabelRow}>
-        <Text style={[s.balanceLabelText, { color: colors.textSecondary }]}>Balance</Text>
-        <TouchableOpacity activeOpacity={0.8} style={s.personalPill}>
-          <Text style={s.personalPillText}>Personal Account</Text>
-          <Ionicons name="chevron-forward" size={10} color="rgba(255,255,255,0.85)" style={{ marginLeft: 1 }} />
-        </TouchableOpacity>
+    <View style={[s.balanceBlock, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingRight: 4 }]}>
+      <View style={{ flex: 1 }}>
+        <Text style={[s.balanceLabelText, { color: colors.textSecondary, marginBottom: 2 }]}>Balance</Text>
+        <View style={s.balanceAmountRow}>
+          <Text style={[s.balanceInteger, { color: colors.text }, balance < 0 && { color: colors.red }]}>{intPart}</Text>
+          <Text style={[s.balanceDecimal, { color: colors.textSecondary }, balance < 0 && { color: colors.red }]}>.{decPart}</Text>
+        </View>
       </View>
-
-      <View style={s.balanceAmountRow}>
-        <Text style={[s.balanceInteger, { color: colors.text }, balance < 0 && { color: colors.red }]}>{intPart}</Text>
-        <Text style={[s.balanceDecimal, { color: colors.textSecondary }, balance < 0 && { color: colors.red }]}>.{decPart}</Text>
-      </View>
+      <Image
+        source={require('../../assets/logo.png')}
+        style={{ width: 72, height: 72, resizeMode: 'contain', opacity: isDark ? 0.85 : 1 }}
+      />
     </View>
   );
 }
@@ -63,28 +61,9 @@ function StatCards() {
   const { budgets } = useBudgets();
   const { isDark, colors } = useThemeStore();
   const router = useRouter();
-  const isFocused = useIsFocused(); // Track focus
-
-  const anim = useRef(new Animated.Value(0)).current;
-  const [isReady, setIsReady] = useState(false);
-
-  useEffect(() => {
-    if (isFocused) {
-      setIsReady(true);
-      anim.setValue(0);
-      Animated.spring(anim, {
-        toValue: 1,
-        useNativeDriver: true,
-        tension: 50,
-        friction: 8,
-      }).start();
-    } else {
-      setIsReady(false);
-    }
-  }, [budgets.length, isFocused]); // Re-trigger on focus
 
   return (
-    <View style={s.statCardsContainer}>
+    <View >
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -109,21 +88,8 @@ function StatCards() {
             const remaining = Math.max(0, budget.amount - budget.spent);
             const progress = Math.min((remaining / budget.amount) * 100, 100);
 
-            const cardAnim = anim.interpolate({
-              inputRange: [0, 1],
-              outputRange: [100 + (index * 40), 0]
-            });
-
-            const opacity = anim.interpolate({
-              inputRange: [0, 0.5, 1],
-              outputRange: [0, 0, 1]
-            });
-
             return (
-              <Animated.View
-                key={budget.id}
-                style={{ transform: [{ translateX: cardAnim }], opacity: isReady ? opacity : 0 }}
-              >
+              <View key={budget.id}>
                 <TouchableOpacity
                   style={[s.statCard, { backgroundColor: colors.surface, borderColor: isDark ? '#2C2C2E' : '#f2f2f2' }]}
                   activeOpacity={0.8}
@@ -134,7 +100,7 @@ function StatCards() {
                 >
                   <View style={[s.statCardInner, { backgroundColor: colors.surface, borderColor: isDark ? '#1C1C1E' : '#eaeaeb' }]}>
                     <View style={s.statCardTop}>
-                      <View style={[s.statIconBox, { backgroundColor: (budget.color.length > 7 ? budget.color.slice(0, 7) : budget.color) + '12' }]}>
+                      <View style={[s.statIconBox, { backgroundColor: isDark ? '#1C1C1E' : '#F5F5F7', borderColor: isDark ? '#2C2C2E' : '#E8E8ED', borderWidth: 1 }]}>
                         <Ionicons name={budget.icon as any} size={14} color={budget.color} />
                       </View>
                       <Ionicons name="chevron-forward" size={10} color={colors.textTertiary} />
@@ -157,7 +123,7 @@ function StatCards() {
                     </View>
                   </View>
                 </TouchableOpacity>
-              </Animated.View>
+              </View>
             );
           })
         )}
@@ -171,9 +137,9 @@ function ActionBelt() {
   const router = useRouter();
   const { colors } = useThemeStore();
   const actions = [
-    { label: 'Spent', icon: <Ionicons name="add-outline" size={18} color={colors.beltText} />, route: '/add-transaction', type: 'expense' },
+    { label: 'Spent', icon: <Ionicons name="remove-outline" size={18} color={colors.beltText} />, route: '/add-transaction', type: 'expense' },
     { label: 'Receive', icon: <Ionicons name="arrow-down-outline" size={15} color={colors.beltText} />, route: '/add-transaction', type: 'income' },
-    { label: 'Add', icon: <Ionicons name="add-outline" size={18} color={colors.beltText} />, route: '/set-budget' },
+    { label: 'Add Budget', icon: <Ionicons name="add-outline" size={18} color={colors.beltText} />, route: '/set-budget' },
   ];
 
   return (
@@ -205,13 +171,7 @@ export default function HomeScreen() {
   const { budgets } = useBudgets();
   const { isDark, colors } = useThemeStore();
   const [pinnedHeaderH, setPinnedHeaderH] = useState(180);
-
-  const scrollY = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    if (isFocused) {
-      // Container animation removed to prioritize individual item staggers
-    }
-  }, [isFocused]);
+  const [activeFilter, setActiveFilter] = useState('All');
 
   const onPinnedLayout = useCallback((event: LayoutChangeEvent) => {
     const { height } = event.nativeEvent.layout;
@@ -219,12 +179,6 @@ export default function HomeScreen() {
   }, []);
 
 
-
-  const statParallaxY = scrollY.interpolate({
-    inputRange: [-100, 0, 1000],
-    outputRange: [0, 0, 1000],
-    extrapolate: 'clamp'
-  });
 
   return (
     <View style={[s.root, { backgroundColor: colors.bg }]}>
@@ -244,35 +198,40 @@ export default function HomeScreen() {
         </SafeAreaView>
       </View>
 
-      <Animated.ScrollView
+      <ScrollView
         style={[s.scroll, { marginTop: pinnedHeaderH }]}
         showsVerticalScrollIndicator={false}
         bounces
         contentContainerStyle={s.scrollContent}
-        scrollEventThrottle={1}
+        scrollEventThrottle={16}
         stickyHeaderIndices={[1]}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: true }
-        )}
       >
-        <Animated.View
+        <View
           style={{
             zIndex: 1,
-            transform: [{ translateY: statParallaxY }],
             marginHorizontal: 10,
             borderRadius: 20,
             overflow: 'hidden',
-            paddingVertical: 2,
-            // paddingHorizontal: 0,
-            marginBottom: 10,
+            paddingTop: 2,
+            paddingBottom: 0,
+            marginBottom: 0,
+            marginTop: 0,
           }}
         >
           <StatCards />
-        </Animated.View>
+        </View>
 
-        <View style={s.stickyBumper}>
+        <View style={[s.stickyBumper, { backgroundColor: colors.bg }]}>
           <View style={s.shadowWrapper}>
+            {/* Top Left Inverted Corner */}
+            <View style={[s.invertedCorner, { left: 0 }]}>
+              <View style={[s.invertedCornerInner, { left: -24, borderColor: colors.beltBg }]} />
+            </View>
+            {/* Top Right Inverted Corner */}
+            <View style={[s.invertedCorner, { right: 0 }]}>
+              <View style={[s.invertedCornerInner, { left: -48, borderColor: colors.beltBg }]} />
+            </View>
+
             <View style={[s.overlapSheet, { backgroundColor: colors.beltBg }]}>
               <ActionBelt />
             </View>
@@ -282,22 +241,34 @@ export default function HomeScreen() {
             <View style={[s.txSectionHeaderSticky, { backgroundColor: colors.bg }]}>
               <View style={s.txHeaderMain}>
                 <Text style={[typography.headingLarge, { fontSize: 24, color: colors.text }]}>Transactions</Text>
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  onPress={() => router.push('/history')}
-                >
-                  <Text style={[typography.link, { color: colors.textSecondary }]}>View all ›</Text>
-                </TouchableOpacity>
               </View>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.filterRow}>
+                {FILTERS.map((f) => {
+                  const isActive = f === activeFilter;
+                  return (
+                    <TouchableOpacity
+                      key={f}
+                      onPress={() => setActiveFilter(f)}
+                      activeOpacity={0.7}
+                      style={[
+                        s.filterPill,
+                        { backgroundColor: colors.bg, borderColor: colors.border, borderWidth: 1 },
+                        isActive && { backgroundColor: colors.accent + '20', borderColor: colors.accent }
+                      ]}
+                    >
+                      <Text style={[isActive ? typography.filterActive : typography.filterInactive, { color: isActive ? colors.accent : colors.textSecondary }]}>{f}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
             </View>
           </View>
         </View>
 
-        <Animated.View style={[s.txListBody, { backgroundColor: colors.bg }]}>
-          <TransactionList transactions={transactions} limit={10} />
-          <View style={{ height: 120, backgroundColor: colors.bg }} />
-        </Animated.View>
-      </Animated.ScrollView>
+        <View style={[s.txListBody, { backgroundColor: colors.bg }]}>
+          <TransactionList transactions={transactions} limit={10} showFilter={false} activeFilter={activeFilter} setActiveFilter={setActiveFilter} />
+        </View>
+      </ScrollView>
     </View>
   );
 }
@@ -306,8 +277,8 @@ export default function HomeScreen() {
 const s = StyleSheet.create({
   root: { flex: 1 },
   scroll: { flex: 1, zIndex: 10 },
-  scrollContent: { paddingBottom: 0 },
-  pinnedHeader: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 },
+  scrollContent: { paddingBottom: 40 },
+  pinnedHeader: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 5 },
   headerContentPadded: { paddingHorizontal: 16, paddingBottom: 0, paddingTop: Platform.OS === 'web' ? 10 : 0 },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
@@ -315,10 +286,10 @@ const s = StyleSheet.create({
     marginBottom: 6,
   },
   logoRow: { flexDirection: 'row', alignItems: 'center', gap: 7 },
-  logoText: { fontFamily: 'Inter_700Bold', fontSize: 18, fontWeight: '700', letterSpacing: -1, fontStyle: "italic" },
+  logoText: { fontFamily: 'Inter_400Regular', fontSize: 12, letterSpacing: -0.3, fontStyle: 'italic', marginTop: 2 },
   headerIconGroup: { flexDirection: 'row', gap: 8 },
   squareBtn: { width: 36, height: 36, borderRadius: 10, justifyContent: 'center', alignItems: 'center', borderWidth: 1 },
-  balanceBlock: { marginBottom: 0 },
+  balanceBlock: { marginBottom: 0, marginTop: 10 },
   balanceLabelRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: -5 },
   balanceLabelText: { fontFamily: 'Inter_400Regular', fontSize: 16, letterSpacing: -1.2 },
   personalPill: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#7C6EEA', paddingHorizontal: 11, paddingVertical: 5, borderRadius: 20, gap: 2 },
@@ -326,7 +297,7 @@ const s = StyleSheet.create({
   balanceAmountRow: { flexDirection: 'row', alignItems: 'baseline' },
   balanceInteger: { fontFamily: 'Inter_700Bold', fontSize: 44, fontWeight: '700', letterSpacing: -2, lineHeight: 52 },
   balanceDecimal: { fontFamily: 'Inter_400Regular', fontSize: 22, letterSpacing: -0.3, lineHeight: 52, marginLeft: 1 },
-  statCardsContainer: { marginBottom: 3 },
+  // statCardsContainer: { marginBottom: 3 },
   statScroll: { gap: 6, paddingHorizontal: 0, paddingBottom: 0 },
   statCard: { width: 130, height: 130, borderRadius: 18, borderWidth: 0.07, padding: 0.7 },
   statCardInner: { flex: 1, borderRadius: 18, borderWidth: 1, padding: 10, justifyContent: 'space-between' },
@@ -342,20 +313,32 @@ const s = StyleSheet.create({
   statRemainingText: { fontFamily: 'Inter_600SemiBold', fontSize: 11, letterSpacing: -0.8 },
   statPercentText: { fontFamily: 'Inter_700Bold', fontSize: 11 },
 
-  stickyBumper: { backgroundColor: 'transparent', overflow: 'visible', zIndex: 10 },
+  stickyBumper: { backgroundColor: 'transparent', overflow: 'visible', zIndex: 20, paddingTop: 24 },
   shadowWrapper: {
-    ...Platform.select({
-      ios: { shadowColor: '#000', shadowOffset: { width: 0, height: -12 }, shadowOpacity: 0.3, shadowRadius: 15 },
-      android: { elevation: 30, shadowColor: '#9d9d9dff' },
-      web: { filter: 'drop-shadow(0px -15px 15px rgba(0,0,0,0.3))' }
-    }),
-    borderTopLeftRadius: 20, borderTopRightRadius: 20, backgroundColor: 'transparent', overflow: 'visible',
+    backgroundColor: 'transparent', overflow: 'visible',
   },
-  overlapSheet: { borderTopLeftRadius: 20, borderTopRightRadius: 20, overflow: 'hidden' },
+  invertedCorner: {
+    position: 'absolute',
+    top: -24,
+    width: 24,
+    height: 24,
+    backgroundColor: 'transparent',
+    overflow: 'hidden',
+  },
+  invertedCornerInner: {
+    position: 'absolute',
+    top: -48,
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    borderWidth: 24,
+    backgroundColor: 'transparent',
+  },
+  overlapSheet: { overflow: 'hidden' },
   beltOuter: { paddingVertical: 5 },
-  beltRow: { flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center' },
+  beltRow: { flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center', paddingHorizontal: 14 },
 
-  txSectionHeaderSticky: { borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingHorizontal: 14, paddingTop: 20 },
+  txSectionHeaderSticky: { borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingHorizontal: 14, paddingTop: 20 },
   txHeaderMain: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
   txListBody: { paddingHorizontal: 14, paddingBottom: 40, zIndex: 5 },
   filterRow: { gap: 8, marginBottom: 10, alignItems: 'center' },

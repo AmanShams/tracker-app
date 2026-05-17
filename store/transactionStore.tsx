@@ -25,7 +25,9 @@ interface TransactionContextType {
   addTransaction: (tx: Omit<Transaction, 'id'>) => void;
   updateTransaction: (tx: Transaction) => void;
   deleteTransaction: (id: string) => void;
+  importTransactions: (newTxs: Omit<Transaction, 'id'>[]) => void;
   refreshTransactions: () => Promise<void>;
+  isLoaded: boolean;
 }
 
 
@@ -124,8 +126,26 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
     setTransactions(prev => prev.filter(t => t.id !== id));
   };
 
+  const importTransactions = (newTxs: Omit<Transaction, 'id'>[]) => {
+    const txs: Transaction[] = newTxs.map(newTx => ({
+      ...newTx,
+      id: Math.random().toString(36).substr(2, 9),
+    }));
+
+    setTransactions(prev => [...txs, ...prev]);
+
+    setBalance(b => {
+      let newBalance = isNaN(b) ? 0 : b;
+      txs.forEach(tx => {
+        if (tx.type === 'income') newBalance += tx.amount;
+        else newBalance -= tx.amount;
+      });
+      return newBalance;
+    });
+  };
+
   return (
-    <TransactionContext.Provider value={{ transactions, balance, addTransaction, updateTransaction, deleteTransaction, refreshTransactions }}>
+    <TransactionContext.Provider value={{ transactions, balance, addTransaction, updateTransaction, deleteTransaction, importTransactions, refreshTransactions, isLoaded }}>
       {children}
     </TransactionContext.Provider>
   );

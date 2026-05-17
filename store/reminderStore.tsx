@@ -24,6 +24,7 @@ interface ReminderContextType {
   reminders: Reminder[];
   updateReminder: (reminder: Reminder) => void;
   toggleReminder: (id: string) => void;
+  isLoaded: boolean;
 }
 
 const DEFAULT_REMINDERS: Reminder[] = [
@@ -76,7 +77,7 @@ export function ReminderProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <ReminderContext.Provider value={{ reminders, updateReminder, toggleReminder }}>
+    <ReminderContext.Provider value={{ reminders, updateReminder, toggleReminder, isLoaded }}>
       {children}
     </ReminderContext.Provider>
   );

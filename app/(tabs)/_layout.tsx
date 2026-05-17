@@ -12,35 +12,15 @@ import { useThemeStore } from '../../store/themeStore';
 
 // ─── Micro Interactions ──────────────────────────────────────────────────────
 function AnimatedScale({ children, onPress, style }: { children: React.ReactNode; onPress?: () => void; style?: any }) {
-  const scale = React.useRef(new Animated.Value(1)).current;
-
-  const handlePressIn = () => {
-    Animated.spring(scale, {
-      toValue: 0.9,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const handlePressOut = () => {
-    Animated.spring(scale, {
-      toValue: 1,
-      useNativeDriver: true,
-      friction: 4,
-      tension: 40,
-    }).start();
-  };
-
   return (
     <TouchableOpacity
       activeOpacity={0.7}
       onPress={onPress}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
       style={style}
     >
-      <Animated.View style={{ transform: [{ scale }], alignItems: 'center', justifyContent: 'center' }}>
+      <View style={{ alignItems: 'center', justifyContent: 'center' }}>
         {children}
-      </Animated.View>
+      </View>
     </TouchableOpacity>
   );
 }
@@ -52,11 +32,11 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
 
   return (
     <View style={[styles.tabBarContainer, { backgroundColor: colors.navBg }]}>
-      <View style={[styles.invertedCorner, { left: 0, backgroundColor: colors.navBg }]}>
-        <View style={[styles.invertedCornerInner, { borderBottomLeftRadius: 20, backgroundColor: cornerBgColor }]} />
+      <View style={[styles.invertedCorner, { left: 0 }]}>
+        <View style={[styles.invertedCornerInner, { left: -24, borderColor: colors.navBg }]} />
       </View>
-      <View style={[styles.invertedCorner, { right: 0, backgroundColor: colors.navBg }]}>
-        <View style={[styles.invertedCornerInner, { borderBottomRightRadius: 20, backgroundColor: cornerBgColor }]} />
+      <View style={[styles.invertedCorner, { right: 0 }]}>
+        <View style={[styles.invertedCornerInner, { left: -48, borderColor: colors.navBg }]} />
       </View>
 
       <View style={styles.tabBar}>
@@ -127,6 +107,7 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarHideOnKeyboard: true,
+        animation: 'fade',
       }}
     >
       <Tabs.Screen name="index" />
@@ -154,9 +135,17 @@ const styles = StyleSheet.create({
     top: -24,
     width: 24,
     height: 24,
+    backgroundColor: 'transparent',
+    overflow: 'hidden',
   },
   invertedCornerInner: {
-    flex: 1,
+    position: 'absolute',
+    top: -48,
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    borderWidth: 24,
+    backgroundColor: 'transparent',
   },
   tabBar: {
     flexDirection: 'row',

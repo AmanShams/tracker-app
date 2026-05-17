@@ -23,38 +23,10 @@ import { useIsFocused } from '@react-navigation/native';
 import { useEffect, useRef } from 'react';
 
 const AnimatedListItem = ({ children, index, isFocused }: { children: React.ReactNode, index: number, isFocused: boolean }) => {
-  const anim = useRef(new Animated.Value(0)).current;
-  const [isReady, setIsReady] = useState(false);
-
-  useEffect(() => {
-    if (isFocused) {
-      setIsReady(true);
-      anim.setValue(0);
-      Animated.timing(anim, {
-        toValue: 1,
-        duration: 400,
-        delay: index * 100,
-        useNativeDriver: true,
-      }).start();
-    } else {
-      setIsReady(false);
-    }
-  }, [index, isFocused]);
-
-  const translateY = anim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [60, 0],
-  });
-
-  const opacity = anim.interpolate({
-    inputRange: [0, 0.5, 1],
-    outputRange: [0, 0, 1],
-  });
-
   return (
-    <Animated.View style={{ opacity: isReady ? opacity : 0, transform: [{ translateY }] }}>
+    <View>
       {children}
-    </Animated.View>
+    </View>
   );
 };
 
@@ -153,10 +125,8 @@ export default function CategoriesScreen() {
                   <View style={s.row}>
                     <View style={[s.iconOuter, { backgroundColor: colors.surface, borderColor: isDark ? '#1C1C1E' : '#f8f8f8' }]}>
                       <View style={[s.iconBox, { 
-                        backgroundColor: (item.color.length > 7 ? item.color.slice(0, 7) : item.color) + '12', 
-                        borderColor: isDark 
-                          ? (item.color.length > 7 ? item.color.slice(0, 7) : item.color) + '40' 
-                          : (item.color.length > 7 ? item.color.slice(0, 7) : item.color) + '20' 
+                        backgroundColor: isDark ? '#1C1C1E' : '#F5F5F7',
+                        borderColor: isDark ? '#2C2C2E' : '#E8E8ED'
                       }]}>
                         <Ionicons name={item.icon as any} size={15} color={item.color} />
                       </View>

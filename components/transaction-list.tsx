@@ -1,6 +1,6 @@
 import { useIsFocused } from '@react-navigation/native';
-import React, { useEffect, useRef, useState } from 'react';
-import { Animated, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { typography } from '../constants/typography';
 import { useBudgets } from '../store/budgetStore';
 import { useThemeStore } from '../store/themeStore';
@@ -16,38 +16,10 @@ interface TransactionListProps {
 }
 
 const AnimatedListItem = ({ children, index, isFocused }: { children: React.ReactNode, index: number, isFocused: boolean }) => {
-  const anim = useRef(new Animated.Value(0)).current;
-  const [isReady, setIsReady] = useState(false);
-
-  useEffect(() => {
-    if (isFocused) {
-      setIsReady(true);
-      anim.setValue(0);
-      Animated.timing(anim, {
-        toValue: 1,
-        duration: 400, // snappier animation
-        delay: index * 200, // long sequential stagger
-        useNativeDriver: true,
-      }).start();
-    } else {
-      setIsReady(false);
-    }
-  }, [index, isFocused]);
-
-  const translateY = anim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [60, 0],
-  });
-
-  const opacity = anim.interpolate({
-    inputRange: [0, 0.5, 1],
-    outputRange: [0, 0, 1],
-  });
-
   return (
-    <Animated.View style={{ opacity: isReady ? opacity : 0, transform: [{ translateY }] }}>
+    <View>
       {children}
-    </Animated.View>
+    </View>
   );
 };
 
