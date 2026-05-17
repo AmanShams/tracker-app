@@ -152,16 +152,16 @@ export default function RemindersScreen() {
 
 const s = StyleSheet.create({
   root: { flex: 1 },
-  scrollContent: { padding: 16, paddingBottom: 40 },
+  scrollContent: { padding: 12, paddingBottom: 30 },
   pinnedHeader: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 100 },
   headerContentPadded: { paddingHorizontal: 16, paddingBottom: 15, paddingTop: Platform.OS === 'web' ? 10 : 0 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'space-between' },
   card: { 
-    width: '48%', 
+    width: '48.5%', 
     aspectRatio: 1, 
-    borderRadius: 28, 
+    borderRadius: 14, 
     borderWidth: 1, 
-    padding: 20, 
+    padding: 16, 
     justifyContent: 'space-between',
   },
   cardTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 14 },
@@ -172,17 +172,17 @@ const s = StyleSheet.create({
   dot: { width: 5, height: 5, borderRadius: 2.5 },
   emptyState: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   
-  toggle: { width: 34, height: 18, borderRadius: 10, padding: 2, alignSelf: 'flex-end' },
+  toggle: { width: 34, height: 18, borderRadius: 9, padding: 2, alignSelf: 'flex-end' },
   knob: { width: 14, height: 14, borderRadius: 7, backgroundColor: '#FFF' },
   knobActive: { alignSelf: 'flex-end' },
 
-  barsContainer: { gap: 12 },
+  barsContainer: { gap: 10 },
   bar: { 
     flexDirection: 'row', 
     alignItems: 'center', 
     justifyContent: 'space-between', 
-    padding: 20, 
-    borderRadius: 24, 
+    padding: 16, 
+    borderRadius: 14, 
     borderWidth: 1 
   },
   barTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 16 },

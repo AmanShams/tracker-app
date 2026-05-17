@@ -279,45 +279,45 @@ export default function EditReminderScreen() {
 
 const s = StyleSheet.create({
   root: { flex: 1 },
-  scrollContent: { padding: 20 },
-  timeContainer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginVertical: 30 },
+  scrollContent: { padding: 14 },
+  timeContainer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginVertical: 16 },
   timeInputBox: { alignItems: 'center' },
-  inputHint: { fontSize: 10, color: '#8E8E93', marginBottom: 8 },
-  timeInput: { width: 100, height: 70, borderRadius: 20, textAlign: 'center', fontSize: 32, fontFamily: 'Inter_700Bold' },
+  inputHint: { fontSize: 10, color: '#8E8E93', marginBottom: 6 },
+  timeInput: { width: 100, height: 70, borderRadius: 12, textAlign: 'center', fontSize: 32, fontFamily: 'Inter_700Bold' },
   colon: { fontSize: 32, marginHorizontal: 15, marginTop: 15 },
 
-  divider: { height: 1, backgroundColor: '#EAEAED', opacity: 0.1, marginVertical: 20 },
+  divider: { height: 1, backgroundColor: '#EAEAED', opacity: 0.1, marginVertical: 12 },
 
-  sectionTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 14, marginBottom: 12 },
-  freqRow: { flexDirection: 'row', gap: 10, marginBottom: 20 },
-  freqBtn: { flex: 1, paddingVertical: 14, borderRadius: 16, alignItems: 'center' },
+  sectionTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 14, marginBottom: 10 },
+  freqRow: { flexDirection: 'row', gap: 10, marginBottom: 12 },
+  freqBtn: { flex: 1, paddingVertical: 12, borderRadius: 12, alignItems: 'center' },
   freqBtnText: { fontFamily: 'Inter_600SemiBold', fontSize: 13 },
 
   categoryScroll: { marginBottom: 10 },
-  catPill: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12 },
+  catPill: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10 },
   catPillText: { fontSize: 12, fontFamily: 'Inter_600SemiBold' },
 
-  dynamicSection: { minHeight: 120 },
+  dynamicSection: { minHeight: 90 },
 
   daysRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  dayPill: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 12 },
+  dayPill: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10 },
   dayPillText: { fontSize: 13, fontFamily: 'Inter_500Medium' },
 
-  infoCard: { flexDirection: 'row', gap: 12, padding: 16, borderRadius: 16, alignItems: 'center' },
+  infoCard: { flexDirection: 'row', gap: 12, padding: 12, borderRadius: 12, alignItems: 'center' },
   infoCardText: { flex: 1, fontSize: 13, lineHeight: 18 },
 
   dateGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  dateCell: { width: 40, height: 40, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
+  dateCell: { width: 40, height: 40, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
   dateCellText: { fontSize: 14, fontFamily: 'Inter_600SemiBold' },
 
   toggleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   toggleTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 16 },
   toggleSubtitle: { fontSize: 12, marginTop: 2 },
-  toggle: { width: 40, height: 22, borderRadius: 11, padding: 2 },
-  knob: { width: 18, height: 18, borderRadius: 9, backgroundColor: '#FFF' },
+  toggle: { width: 34, height: 18, borderRadius: 9, padding: 2 },
+  knob: { width: 14, height: 14, borderRadius: 7, backgroundColor: '#FFF' },
   knobActive: { alignSelf: 'flex-end' },
 
-  saveBtn: { paddingVertical: 18, borderRadius: 20, alignItems: 'center', marginTop: 20 },
+  saveBtn: { paddingVertical: 14, borderRadius: 14, alignItems: 'center', marginTop: 10 },
   saveBtnText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
   pinnedHeader: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 100 },
   headerContentPadded: { paddingHorizontal: 16, paddingBottom: 5, paddingTop: Platform.OS === 'web' ? 10 : 0 },
